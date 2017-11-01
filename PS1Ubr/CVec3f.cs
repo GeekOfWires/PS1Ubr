@@ -19,6 +19,13 @@ namespace PS1Ubr
             this.z = z;
         }
 
+        /*
+         * Properties prepped in case I miss something
+         */
+
+        /// <summary>
+        /// X Component
+        /// </summary>
         public float X
         {
             get
@@ -31,6 +38,9 @@ namespace PS1Ubr
             }
         }
 
+        /// <summary>
+        /// Y Component
+        /// </summary>
         public float Y
         {
             get
@@ -43,6 +53,9 @@ namespace PS1Ubr
             }
         }
 
+        /// <summary>
+        /// Z Component
+        /// </summary>
         public float Z
         {
             get

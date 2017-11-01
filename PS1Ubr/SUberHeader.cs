@@ -12,19 +12,19 @@ namespace PS1Ubr
     /// </summary>
     public struct SUberHeader
     {
-        public UInt16[] FourCC;
-        public uint VersionA;
-        public uint VersionB;
-        public uint EntryCount;
-        public uint Vec3Count;
-        public uint Vec2Count;
-        public uint LookupCount;
-        public uint U32Count;
-        public uint MeshDataSize;
-        public uint Field_28;
+        internal UInt16[] FourCC;
+        internal uint VersionA;
+        internal uint VersionB;
+        internal uint EntryCount;
+        internal uint Vec3Count;
+        internal uint Vec2Count;
+        internal uint LookupCount;
+        internal uint U32Count;
+        internal uint MeshDataSize;
+        internal uint Field_28;
 
-        public static readonly UInt16[] FourCCValue = new UInt16[4] { 'u', 'b', 'e', 'r' };
-        public static readonly uint VersionAValue = 1;
-        public static readonly uint VersionBValue = 1;
+        internal static readonly UInt16[] FourCCValue = new UInt16[4] { 'u', 'b', 'e', 'r' };
+        internal static readonly uint VersionAValue = 1;
+        internal static readonly uint VersionBValue = 1;
     }
 }
