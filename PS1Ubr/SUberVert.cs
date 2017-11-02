@@ -12,8 +12,8 @@ namespace PS1Ubr
         internal CVec3f Normal;
         internal CVec2f UV0;
         internal CVec2f UV1;
-        internal uint Diffuse;
-        internal UInt16[] Bones;
-        internal float Weight;
+        internal UInt32 Diffuse;
+        internal Byte[] Bones;
+        internal Single Weight;
     }
 }

@@ -35,12 +35,14 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CUberData.cs" />
     <Compile Include="CVec2f.cs" />
     <Compile Include="CVec3f.cs" />
     <Compile Include="eVertexType.cs" />
     <Compile Include="SUberEntry.cs" />
     <Compile Include="SUberHeader.cs" />
     <Compile Include="SUberVert.cs" />
+    <Compile Include="Unmanaged\Memory.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
