@@ -35,6 +35,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CMesh.cs" />
+    <Compile Include="CMeshSection.cs" />
+    <Compile Include="CMeshSystem.cs" />
     <Compile Include="CUberData.cs" />
     <Compile Include="CVec2f.cs" />
     <Compile Include="CVec3f.cs" />

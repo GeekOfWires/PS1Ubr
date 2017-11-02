@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PS1Ubr
 {
-    public enum VertexType
+    public enum eVertexType
     {
         None = 0,
         Lit = 1,
