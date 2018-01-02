@@ -8,13 +8,10 @@ namespace PS1Ubr
 {
     public struct CVec2f
     {
-        private float x;
-        private float y;
-
         public CVec2f(float x, float y)
         {
-            this.x = x;
-            this.y = y;
+            this.X = x;
+            this.Y = y;
         }
 
         /*
@@ -24,31 +21,11 @@ namespace PS1Ubr
         /// <summary>
         /// X Component
         /// </summary>
-        public float X
-        {
-            get
-            {
-                return x;
-            }
-            set
-            {
-                x = value;
-            }
-        }
+        public float X { get; set; }
 
         /// <summary>
         /// Y Component
         /// </summary>
-        public float Y
-        {
-            get
-            {
-                return y;
-            }
-            set
-            {
-                y = value;
-            }
-        }
+        public float Y { get; set; }
     }
 }
