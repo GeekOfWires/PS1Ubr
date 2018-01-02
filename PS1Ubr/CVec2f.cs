@@ -36,6 +36,9 @@ namespace PS1Ubr
             }
         }
 
+        /// <summary>
+        /// Y Component
+        /// </summary>
         public float Y
         {
             get
