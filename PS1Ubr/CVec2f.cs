@@ -14,10 +14,6 @@ namespace PS1Ubr
             this.Y = y;
         }
 
-        /*
-         * Properties in case I miss something
-         */
-
         /// <summary>
         /// X Component
         /// </summary>

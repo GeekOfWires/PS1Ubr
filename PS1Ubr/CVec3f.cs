@@ -15,10 +15,6 @@ namespace PS1Ubr
             this.Z = z;
         }
 
-        /*
-         * Properties prepped in case I miss something
-         */
-
         /// <summary>
         /// X Component
         /// </summary>
@@ -33,5 +29,10 @@ namespace PS1Ubr
         /// Z Component
         /// </summary>
         public float Z { get; set; }
+
+        /// <summary>
+        /// Length of CVec3f
+        /// </summary>
+        public float Magnitude => ((float)Math.Sqrt((X * X) + (Y * Y) + (Z * Z)));
     }
 }
