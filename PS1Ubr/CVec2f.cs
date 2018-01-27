@@ -23,5 +23,15 @@ namespace PS1Ubr
         /// Y Component
         /// </summary>
         public float Y { get; set; }
+
+        /// <summary>
+        /// Magnitude
+        /// </summary>
+        public float Magnitude => ((float)Math.Sqrt((X * X) + (Y * Y)));
+
+        /// <summary>
+        /// Normalize
+        /// </summary>
+        public CVec2f Normalize => new CVec2f(X / Magnitude, Y / Magnitude);
     }
 }
