@@ -11,6 +11,8 @@ namespace PS1Ubr.Unmanaged
     {
         [DllImport("msvcrt.dll")]
         static extern int memcmp(byte[] one, byte[] two, UInt32 count);
+        [DllImport("msvcrt.dll")]
+        static extern int memcpy(IntPtr one, IntPtr two, Int32 end);
 
         public static bool ArraysCompare(byte[] one, byte[] two)
         {

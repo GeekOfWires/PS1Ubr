@@ -35,7 +35,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CBoneTransformation.cs" />
+    <Compile Include="CBoneTransform.cs" />
     <Compile Include="CMesh.cs" />
     <Compile Include="CMeshSection.cs" />
     <Compile Include="CMeshSystem.cs" />

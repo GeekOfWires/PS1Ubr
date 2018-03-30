@@ -6,9 +6,15 @@ using System.Threading.Tasks;
 
 namespace PS1Ubr
 {
-    public class CBoneTransformation
+    public class CBoneTransform
     {
         public Int32 Flags;
         public CVec3f Position;
+        public float[] RotationMatrix;
+
+        public bool Load(object r, CUberData data)
+        {
+            
+        }
     }
 }

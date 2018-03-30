@@ -45,11 +45,11 @@ namespace PS1Ubr
             return (uint)(Entries.Count > 0 ? Entries.Count - 1 : 0);
         }
 
-        public bool FetchMeshSystems(string name, CMeshSystem system)
+        public bool FetchMeshSystem(string name, CMeshSystem system)
         {
             for (uint i = 0; i < (uint)Entries.Count; i++)
             {
-
+                if (Unmanaged.Memory
             }
         }
     }
