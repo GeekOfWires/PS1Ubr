@@ -17,5 +17,11 @@ namespace PS1Ubr
         public UInt32 ID;   // CMeshSection::MeshID
         public UInt32 MeshSectionCount;
         public List<object> MeshSections;
+
+        /*
+         *  Just a basic note about the list of MeshSections, this was a complete
+         *  1:1 move from the C++ header to this file. The List can probably be
+         *  adjusted from a List<object> to List<CMeshSections>.
+         */
     }
 }

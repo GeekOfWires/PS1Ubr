@@ -40,6 +40,7 @@ namespace PS1Ubr
             return true;
         }
 
+        // Incomplete
         uint NumEntries()
         {
             return (uint)(Entries.Count > 0 ? Entries.Count - 1 : 0);
