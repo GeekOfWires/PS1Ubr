@@ -9,19 +9,28 @@ namespace PS1Ubr
     public class CMesh
     {
         public string Name;
-        public string ModelName;
-        public UInt32 LOD;
+        public string ModelName; //?
+        public uint LOD;
         public CVec3f BBMin;
         public CVec3f BBMax;
-        public UInt32 MaxSectionCount2; // Always equal to mesh section count
-        public UInt32 ID;   // CMeshSection::MeshID
-        public UInt32 MeshSectionCount;
-        public List<object> MeshSections;
+        public uint MaxSectionCount2; // Always equal to mesh section count
+        public uint ID;   // CMeshSection::MeshID
+        public uint MeshSectionCount;
+        public List<CMeshSection> MeshSections;
 
         /*
          *  Just a basic note about the list of MeshSections, this was a complete
-         *  1:1 move from the C++ header to this file. The List can probably be
-         *  adjusted from a List<object> to List<CMeshSections>.
+         *  1:1 move from the C++ header to this file.
          */
+
+        public bool Load()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool LoadMeshSections()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

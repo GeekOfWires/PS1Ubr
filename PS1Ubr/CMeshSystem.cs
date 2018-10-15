@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PS1Ubr
 {
-    public class CMeshSystem
+    public class CMeshSystem : IDisposable
     {
         string Name;
         List<CMesh> MeshArray;
@@ -24,5 +24,20 @@ namespace PS1Ubr
         CAAB AAB;
         CCollisionRepresentation Collision;
         CMesh[] LODs = { null, null, null, null, null, null, null, null, null, null };
+
+        public void Dispose()
+        {
+            Clear();
+        }
+
+        private void Clear()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Load()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace PS1Ubr
 {
-    public class CCoollisionPart
+    public struct SUberTri
     {
-        String Name;
-        CVec3f BBoxMin;
-        CVec3f BBoxMax;
+        // this doesn't seem to be used anywhere
+        // uint16_t	V[3];
     }
 }

@@ -8,17 +8,17 @@ namespace PS1Ubr
 {
     public class CMeshSection
     {
-        public String MaterialName;
+        public string MaterialName;
 
-        public UInt32 Flags = 0;
-        public UInt32 ID = 0;
-        public UInt32 MeshID = 0;
-        public UInt32 LOD = 0;
+        public uint Flags = 0; //2 = tristrip
+        public uint ID = 0;
+        public uint MeshID = 0;
+        public uint LOD = 0;
         public eVertexType VertexType = eVertexType.None;
         public CVec3f BBMin;
         public CVec3f BBMax;
-        public UInt32 IndexCount = 0;
-        public UInt32 VertexCount = 0;
+        public uint IndexCount = 0;
+        public uint VertexCount = 0;
         public List<SUberVert> Vert;
         public List<UInt16> Indices;
 
@@ -28,14 +28,33 @@ namespace PS1Ubr
         public bool HasColor = false;
         public bool HasSkin = false;
 
-        protected UInt32 LookupOffset;
-        protected UInt32 U32Offset;
+        protected uint LookupOffset;
+        protected uint U32Offset;
+        //todo: protected uint U32PerVert
+        /*
+        uint32_t U32PerVert(eVertexType type) {
+		switch (type) {
+		case eVertexType::Lit:
+		case eVertexType::Unlit:
+			return 2;
+		case eVertexType::Thin:
+			return 1;
+		case eVertexType::Raw:
+		default:
+			return 0;
+		case eVertexType::FatDeform:
+			return 4;
+		case eVertexType::Fat:
+		case eVertexType::Deform:
+			return 3;
+		}
+         */
 
-        protected CVec3f DecodeNormal(UInt32 n)
+        protected CVec3f DecodeNormal(uint n)
         {
-            UInt32 x = ((UInt32)(n >> 20) & 0x3FF) - 0x200;
-            UInt32 y = ((UInt32)(n >> 10) & 0x3FF) - 0x200;
-            UInt32 z = ((UInt32)(n) & 0x3FF) - 0x200;
+            uint x = ((uint)(n >> 20) & 0x3FF) - 0x200;
+            uint y = ((uint)(n >> 10) & 0x3FF) - 0x200;
+            uint z = ((uint)(n) & 0x3FF) - 0x200;
 
             return new CVec3f
             {
@@ -48,9 +67,67 @@ namespace PS1Ubr
         // Incomplete
         protected void BuildVerticies_Lit(CUberData data)
         {
-            UInt32 i;
+            uint i;
+            throw new NotImplementedException();
+        }
 
+        protected void BuildVertices_Unlit(CUberData data)
+        {
+            throw new NotImplementedException();
+        }
 
+        protected void DecodeDeform(SUberVert v, uint val)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected void BuildVertices_Deform(CUberData data)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected void BuildVertices_Thin(CUberData data)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected void BuildVertices_Raw(CUberData data)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected void BuildVertices_Fat(CUberData data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Load()
+        {
+            throw new NotImplementedException();
+        }
+
+        public enum eVertexType
+        {
+            None = 0,
+            Lit = 1,
+            Unlit = 2,
+            Thin = 3,
+            Raw = 4,
+            FatDeform = 5,
+            Fat = 6,
+            Deform = 14
+        }
+
+        public struct SUberVert
+        {
+            internal CVec3f Position;
+            internal CVec3f Normal;
+            internal CVec2f UV0;
+            internal CVec2f UV1;
+            internal UInt32 Diffuse;
+            internal Byte[] Bones;
+            internal Single Weight;
         }
     }
+
 }

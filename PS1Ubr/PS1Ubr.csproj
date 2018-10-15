@@ -36,21 +36,24 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CAAB.cs" />
+    <Compile Include="CBone.cs" />
     <Compile Include="CBoneTransform.cs" />
     <Compile Include="CCollisionRepresentation.cs" />
-    <Compile Include="CCoollisionPart.cs" />
+    <Compile Include="CCollisionPart.cs" />
+    <Compile Include="CExternalModelInstance.cs" />
     <Compile Include="CMesh.cs" />
     <Compile Include="CMeshSection.cs" />
     <Compile Include="CMeshSystem.cs" />
     <Compile Include="CPortalSystem.cs" />
+    <Compile Include="CPortalSystemPlane.cs" />
+    <Compile Include="CSkeleton.cs" />
     <Compile Include="CUberData.cs" />
     <Compile Include="CVec2f.cs" />
     <Compile Include="CVec3f.cs" />
     <Compile Include="CVec4f.cs" />
-    <Compile Include="eVertexType.cs" />
     <Compile Include="SUberEntry.cs" />
     <Compile Include="SUberHeader.cs" />
-    <Compile Include="SUberVert.cs" />
+    <Compile Include="SUberTri.cs" />
     <Compile Include="Unmanaged\Memory.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
