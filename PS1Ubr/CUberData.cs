@@ -40,12 +40,15 @@ namespace PS1Ubr
             return true;
         }
 
-        // Incomplete
         uint NumEntries()
         {
             return (uint)(Entries.Count > 0 ? Entries.Count - 1 : 0);
         }
 
-        
+        // Same status as all other Load methods.
+        bool Load()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
