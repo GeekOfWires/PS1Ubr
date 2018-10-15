@@ -30,7 +30,7 @@ namespace PS1Ubr
 
         protected UInt32 LookupOffset;
         protected UInt32 U32Offset;
-        
+
         protected CVec3f DecodeNormal(UInt32 n)
         {
             UInt32 x = ((UInt32)(n >> 20) & 0x3FF) - 0x200;
@@ -45,11 +45,12 @@ namespace PS1Ubr
             };
         }
 
+        // Incomplete
         protected void BuildVerticies_Lit(CUberData data)
         {
             UInt32 i;
 
-            
+
         }
     }
 }
