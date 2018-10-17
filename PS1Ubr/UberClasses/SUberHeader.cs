@@ -7,10 +7,12 @@ using System.Threading.Tasks;
 
 namespace PS1Ubr
 {
-    [StructLayout(LayoutKind.Sequential)]
-    public unsafe struct SUberHeader
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct SUberHeader
     {
-        internal fixed byte FourCC[4];
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        internal byte[] FourCC;
+
         internal uint VersionA;
         internal uint VersionB;
         internal uint EntryCount;
@@ -19,6 +21,7 @@ namespace PS1Ubr
         internal uint LookupCount;
         internal uint U32Count;
         internal uint MeshDataSize;
+        internal uint ModelDataSize;
         internal uint Field_28;
 
         internal static readonly byte[] FourCCValue = { (byte)'u', (byte)'b', (byte)'e', (byte)'r' };
