@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PS1Ubr", "PS1Ubr\PS1Ubr.csp
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{12F132AB-52A0-425F-98CC-0F357E210CBE}"
 	ProjectSection(SolutionItems) = preProject
+		Buffer.cpp = Buffer.cpp
+		Buffer.h = Buffer.h
 		PS1UbrHeader.h = PS1UbrHeader.h
 	EndProjectSection
 EndProject
