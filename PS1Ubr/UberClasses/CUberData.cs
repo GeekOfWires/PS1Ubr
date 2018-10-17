@@ -22,14 +22,14 @@ namespace PS1Ubr
         const uint8_t*		m_pMeshDataCur = nullptr;
 	    const uint8_t*		m_pMeshDataEnd = nullptr;
         */
+        protected byte m_pMeshDataCur;
+        protected byte m_pMeshDataEnd;
         protected uint m_LookupOffset = 0;
         protected uint m_U32Offset = 0;
 
-        public bool Load(MemoryStream r)
+        public bool Load(CDynMemoryReader r)
         {
             //todo: unfinished
-            throw new NotImplementedException();
-
             uint i;
             SUberHeader hdr = new SUberHeader();    // C# Possibly Unassigned Value
 
@@ -37,7 +37,7 @@ namespace PS1Ubr
             {
                 return false;
             }
-            if (Memory.ArraysCompare(hdr.FourCC, SUberHeader.FourCCValue))
+            if (hdr.FourCC == SUberHeader.FourCCValue)
             {
                 return false;
             }
@@ -49,6 +49,10 @@ namespace PS1Ubr
             {
                 return false;
             }
+
+            Entries.Capacity = (int) hdr.EntryCount;
+
+
 
             return true;
         }

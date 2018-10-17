@@ -35,25 +35,27 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CAAB.cs" />
-    <Compile Include="CBone.cs" />
-    <Compile Include="CBoneTransform.cs" />
-    <Compile Include="CCollisionRepresentation.cs" />
-    <Compile Include="CCollisionPart.cs" />
-    <Compile Include="CExternalModelInstance.cs" />
-    <Compile Include="CMesh.cs" />
-    <Compile Include="CMeshSection.cs" />
-    <Compile Include="CMeshSystem.cs" />
-    <Compile Include="CPortalSystem.cs" />
-    <Compile Include="CPortalSystemPlane.cs" />
-    <Compile Include="CSkeleton.cs" />
-    <Compile Include="CUberData.cs" />
-    <Compile Include="CVec2f.cs" />
-    <Compile Include="CVec3f.cs" />
-    <Compile Include="CVec4f.cs" />
-    <Compile Include="SUberEntry.cs" />
-    <Compile Include="SUberHeader.cs" />
-    <Compile Include="SUberTri.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="UberClasses\CAAB.cs" />
+    <Compile Include="UberClasses\CBone.cs" />
+    <Compile Include="UberClasses\CBoneTransform.cs" />
+    <Compile Include="UberClasses\CCollisionRepresentation.cs" />
+    <Compile Include="UberClasses\CCollisionPart.cs" />
+    <Compile Include="CDynMemoryReader.cs" />
+    <Compile Include="UberClasses\CExternalModelInstance.cs" />
+    <Compile Include="UberClasses\CMesh.cs" />
+    <Compile Include="UberClasses\CMeshSection.cs" />
+    <Compile Include="UberClasses\CMeshSystem.cs" />
+    <Compile Include="UberClasses\CPortalSystem.cs" />
+    <Compile Include="UberClasses\CPortalSystemPlane.cs" />
+    <Compile Include="UberClasses\CSkeleton.cs" />
+    <Compile Include="UberClasses\CUberData.cs" />
+    <Compile Include="UberClasses\CVec2f.cs" />
+    <Compile Include="UberClasses\CVec3f.cs" />
+    <Compile Include="UberClasses\CVec4f.cs" />
+    <Compile Include="UberClasses\SUberEntry.cs" />
+    <Compile Include="UberClasses\SUberHeader.cs" />
+    <Compile Include="UberClasses\SUberTri.cs" />
     <Compile Include="Unmanaged\Memory.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -13,7 +13,6 @@ namespace PS1Ubr
 
         public bool Load()
         {
-            // todo: Port this
             throw new NotImplementedException();
         }
     }

@@ -23,7 +23,7 @@ namespace PS1Ubr
         internal UInt32 MeshDataSize;
         internal UInt32 Field_28;
 
-        internal static readonly Byte[] FourCCValue = 
+        internal static readonly Byte[] FourCCValue =
             new Byte[4] { (byte)('u'), (byte)('b'), (byte)('e'), (byte)('r') };
 
         internal static readonly UInt32 VersionAValue = 1;

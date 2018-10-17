@@ -2,14 +2,14 @@
 
 namespace PS1Ubr
 {
-    public class CExternalModelInstance
+    public class CBone
     {
         public string Name;
-        public int BoneIndex;
+        public Int32 Parent;
+        public CBoneTransform Transform;
 
         public bool Load()
         {
-            //todo: Port this
             throw new NotImplementedException();
         }
     }
