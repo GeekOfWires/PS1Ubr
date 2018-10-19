@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Security.Policy;
+using System.Linq;
 using PS1Ubr.UberClasses;
 
 namespace PS1Ubr
@@ -84,7 +85,9 @@ namespace PS1Ubr
                 for (i = 0; i < n; i++)
                 {
                     if(MeshItems.Count <= i) MeshItems.Add(new CMeshItem());
-                    if (!MeshItems[(int) i].Load(ref r, ref data)) return false;
+                    var element = MeshItems[(int) i];
+                    if (!element.Load(ref r, ref data)) return false;
+                    MeshItems[(int) i] = element;
                 }
 
                 if (!r.Get(ref n)) return false;
