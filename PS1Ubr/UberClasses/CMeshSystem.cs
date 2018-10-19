@@ -78,6 +78,7 @@ namespace PS1Ubr
                 Vec3Data.Capacity = (int) n;
                 for (i = 0; i < n; i++)
                 {
+                    if(Vec3Data.Count <= i) Vec3Data.Add(new List<CVec3f>());
                     var element = Vec3Data[(int) i];
                     if (!Loaders.LoadPrimitiveArray(ref element, ref r)) return false;
                     Vec3Data[(int) i] = element;

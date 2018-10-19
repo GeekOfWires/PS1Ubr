@@ -12,29 +12,42 @@ namespace PS1Ubr
         public CVec3f BBMin;
         public CVec3f BBMax;
 
-        public CPortalMesh PortalMesh0;
-        public CPortalMesh PortalMesh1;
-        public CPortalMesh PortalMesh2;
-        public CPortalMesh PortalMesh3;
-        public CPortalMesh PortalMesh4;
+        public CPortalMesh PortalMesh0 = new CPortalMesh();
+        public CPortalMesh PortalMesh1 = new CPortalMesh();
+        public CPortalMesh PortalMesh2 = new CPortalMesh();
+        public CPortalMesh PortalMesh3 = new CPortalMesh();
+        public CPortalMesh PortalMesh4 = new CPortalMesh();
 
-        public List<CPortalSystemPortal> ExteriorPortals;
-        public List<CPortalRegion> Regions;
-        public List<string> Strings;
-        public List<CMeshItem> MeshItems;
+        public List<CPortalSystemPortal> ExteriorPortals = new List<CPortalSystemPortal>();
+        public List<CPortalRegion> Regions = new List<CPortalRegion>();
+        public List<string> Strings = new List<string>();
+        public List<CMeshItem> MeshItems = new List<CMeshItem>();
         //These come from <assetname>.lst
-        public List<CMeshItem> AdditionalMeshItems;
-        public List<uint> U32s;
-        public List<CPortalRegionSubStructure0> SubStructs1; //Never used
+        public List<CMeshItem> AdditionalMeshItems = new List<CMeshItem>();
+        public List<uint> U32s = new List<uint>();
+        public List<CPortalRegionSubStructure0> SubStructs1 = new List<CPortalRegionSubStructure0>(); //Never used
         public bool Loaded;
 
-        public CAABV AABV;
+        public CAABV AABV = new CAABV();
 
         public CMeshSystem MeshSystem = null;
 
         public void Clear()
         {
-            throw new NotImplementedException();
+            ExteriorPortals.Clear();
+            Regions.Clear();
+            Strings.Clear();
+            MeshItems.Clear();
+            U32s.Clear();
+            SubStructs1.Clear();
+
+            PortalMesh0.Clear();
+            PortalMesh1.Clear();
+            PortalMesh2.Clear();
+            PortalMesh3.Clear();
+            PortalMesh4.Clear();
+
+            Loaded = false;
         }
 
         public bool Load(ref CDynMemoryReader r, ref CUberData data)
@@ -70,6 +83,7 @@ namespace PS1Ubr
                 MeshItems.Capacity = (int) n;
                 for (i = 0; i < n; i++)
                 {
+                    if(MeshItems.Count <= i) MeshItems.Add(new CMeshItem());
                     if (!MeshItems[(int) i].Load(ref r, ref data)) return false;
                 }
 
@@ -111,8 +125,8 @@ namespace PS1Ubr
 
         public class CAABV
         {
-            public List<CMeshItemAABV> AABVs;
-            public CMeshItemAABV RootAABV;
+            public List<CMeshItemAABV> AABVs = new List<CMeshItemAABV>();
+            public CMeshItemAABV RootAABV = new CMeshItemAABV();
 
             public bool Load(ref CDynMemoryReader r, ref CUberData data)
             {
@@ -128,6 +142,11 @@ namespace PS1Ubr
                 if (n != 0)
                 {
                     AABVs.Capacity = (int) n;
+                    for (int i = 0; i < n; i++)
+                    {
+                        AABVs.Add(new CMeshItemAABV());
+                    }
+                    
                     uint index = 0;
                     return RootAABV.Load(ref r, ref data, ref AABVs, ref index);
                 }
@@ -140,7 +159,7 @@ namespace PS1Ubr
                 public byte Flags;
                 public CVec3f BBMin;
                 public CVec3f BBMax;
-                public List<UInt16> LeafIDs;
+                public List<UInt16> LeafIDs = new List<ushort>();
                 public CMeshItemAABV pLeftNode = null;
                 public CMeshItemAABV pRightNode = null;
 
@@ -211,8 +230,10 @@ namespace PS1Ubr
                 if (s == "") return false;
                 AssetName = s;
 
+                Materials = new List<uint>();
                 if (!Loaders.LoadPrimitiveArray(ref Materials, ref r)) return false;
 
+                Transform = new List<float>();
                 if (!r.GetRaw(ref Transform, 4 * 4)) return false;
 
                 return true;
@@ -287,7 +308,7 @@ namespace PS1Ubr
 
         public class CPortalSystemPortal : ILoadable
         {
-            public CPortalSystemPlane Plane;
+            public CPortalSystemPlane Plane = new CPortalSystemPlane();
             public uint A; // TODO
             // IDs of the connected regions
             public uint RegionA;
@@ -305,6 +326,7 @@ namespace PS1Ubr
                 if (!r.Get(ref RegionB)) return false;
                 for (int i = 0; i < 4; i++)
                 {
+                    if(Points.Count <= i) Points.Add(new CVec3f());
                     var element = Points[i];
                     if (!r.Get(ref element)) return false;
                     Points[i] = element;

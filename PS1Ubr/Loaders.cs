@@ -34,6 +34,7 @@ namespace PS1Ubr
             {
                 s = r.ReadPascalStr();
                 if (s == "") return false;
+                if(array.Count <= i) array.Add("");
                 array[(int)i] = s;
             }
 
@@ -47,6 +48,7 @@ namespace PS1Ubr
             array.Capacity = (int)count;
             for (i = 0; i < count; i++)
             {
+                if(array.Count <= i) { array.Add(new T()); }
                 var element = array[(int)i];
                 if (!r.Get(ref element)) return false;
                 array[(int)i] = element;
