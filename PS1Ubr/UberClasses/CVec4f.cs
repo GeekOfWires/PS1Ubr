@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace PS1Ubr
 {
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct CVec4f
     {
         public CVec4f(float w, float x, float y, float z)

@@ -1,32 +1,68 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace PS1Ubr
 {
-    // Incomplete
-    public class CAAB
+    public class CAAB : ILoadable
     {
-        public UInt32 FaceCount;
-        public UInt32 NodeCount;
-        public UInt32 FaceIndexMapCount;
-        public List<SAABFace> Faces;
-        public List<SAABBNode> Nodes;
-        public List<int> FaceIndexMap;
+        public uint FaceCount;
+        public uint NodeCount;
+        public uint FaceIndexMapCount;
+        public List<SAABFace> Faces = new List<SAABFace>();
+        public List<SAABBNode> Nodes = new List<SAABBNode>();
+        public List<int> FaceIndexMap = new List<int>();
         public SAABBNode RootNode;
 
         public void Clear()
         {
-            throw new NotImplementedException();
+            FaceCount = NodeCount = FaceIndexMapCount = 0;
+            Faces.Clear();
+            Nodes.Clear();
         }
 
-        public bool Load()
+        public bool Load(ref CDynMemoryReader r, ref CUberData data)
         {
-            throw new NotImplementedException();
+            byte[] d;
+            if (!r.Get(ref FaceCount)) return false;
+            if (FaceCount != 0)
+            {
+                d = data.ReadMeshData(FaceCount * (uint) Marshal.SizeOf(typeof(SAABFace)));
+                if (d == null || d.Length == 0) return false;
+                Faces.Capacity = (int) FaceCount;
+                Loaders.LoadBytesIntoObjectList(ref Faces, ref d);
+            }
+
+            if (!r.Get(ref NodeCount)) return false;
+
+            d = data.ReadMeshData(0x28); // 40 bytes
+            if (d == null || d.Length == 0) return false;
+            Loaders.LoadBytesIntoObject(ref RootNode, ref d);
+
+            if (NodeCount != 0)
+            {
+                d = data.ReadMeshData(NodeCount * (uint) Marshal.SizeOf(typeof(SAABBNode)));
+                if (d == null || d.Length == 0) return false;
+                Nodes.Capacity = (int) NodeCount;
+                Loaders.LoadBytesIntoObjectList(ref Nodes, ref d);
+            }
+
+            if (!r.Get(ref FaceIndexMapCount)) return false;
+            if (FaceIndexMapCount != 0)
+            {
+                d = data.ReadMeshData(FaceIndexMapCount * sizeof(uint));
+                if (d == null || d.Length == 0) return false;
+                FaceIndexMap.Capacity = (int) FaceIndexMapCount;
+                Loaders.LoadBytesIntoObjectList(ref FaceIndexMap, ref d);
+            }
+
+            return true;
         }
 
+        [StructLayout(LayoutKind.Sequential, Pack=1)]
         public struct SAABBNode
         {
             UInt16 Flags; //2 - 1 = has leaves
@@ -38,6 +74,7 @@ namespace PS1Ubr
             uint RightChild; //28
         }
 
+        [StructLayout(LayoutKind.Sequential, Pack=1)]
         public struct SAABFace
         {
             UInt16 MeshID;

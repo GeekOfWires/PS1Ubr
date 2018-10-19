@@ -36,6 +36,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CDynMemoryBuffer.cs" />
+    <Compile Include="ILoadable.cs" />
+    <Compile Include="Loaders.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="UberClasses\CAAB.cs" />
     <Compile Include="UberClasses\CBone.cs" />
@@ -54,6 +57,8 @@
     <Compile Include="UberClasses\CVec2f.cs" />
     <Compile Include="UberClasses\CVec3f.cs" />
     <Compile Include="UberClasses\CVec4f.cs" />
+    <Compile Include="UberClasses\Flags\CMeshItemAABVFlags.cs" />
+    <Compile Include="UberClasses\Flags\MeshFlags.cs" />
     <Compile Include="UberClasses\SUberEntry.cs" />
     <Compile Include="UberClasses\SUberHeader.cs" />
     <Compile Include="UberClasses\SUberTri.cs" />

@@ -6,17 +6,29 @@ using System.Threading.Tasks;
 
 namespace PS1Ubr
 {
-    public class CPortalSystemPlane
+    public class CPortalSystemPlane : ILoadable
     {
         public CVec3f Normal;
         public float Distance;
         public float E; //TODO
 
-        // TODO: Figure out CDynMemoryReader and how to reimplement it.
-        //       Understood at the moment it's a sequential byte reader.
-        bool Load()
+        public bool Load(ref CDynMemoryReader r, ref CUberData data)
         {
-            throw new NotImplementedException();
+            Console.WriteLine($"Loading {GetType().Name}");
+            float temp = 0;
+            if (!r.Get(ref temp)) return false;
+            Normal.X = temp;
+
+            if (!r.Get(ref temp)) return false;
+            Normal.Y = temp;
+
+            if (!r.Get(ref temp)) return false;
+            Normal.Z = temp;
+
+            if (!r.Get(ref Distance)) return false;
+            if (!r.Get(ref E)) return false;
+
+            return true;
         }
     }
 }

@@ -2,15 +2,23 @@
 
 namespace PS1Ubr
 {
-    public class CBone
+    public class CBone : ILoadable
     {
         public string Name;
-        public Int32 Parent;
-        public CBoneTransform Transform;
+        public int Parent;
+        public CBoneTransform Transform = new CBoneTransform();
 
-        public bool Load()
+        public bool Load(ref CDynMemoryReader r, ref CUberData data)
         {
-            throw new NotImplementedException();
+            string s;
+            s = r.ReadPascalStr();
+            if (s == "") return false;
+            Name = s;
+
+            if (!r.Get(ref Parent)) return false;
+            if (!Transform.Load(ref r, ref data)) return false;
+
+            return true;
         }
     }
 }

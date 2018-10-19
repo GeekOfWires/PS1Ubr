@@ -9,12 +9,24 @@ namespace PS1Ubr
 {
     public class CCollisionRepresentation
     {
-        String Name;
-        List<CCollisionPart> Parts;
+        public string Name;
+        public List<CCollisionPart> Parts = new List<CCollisionPart>();
 
-        public bool Load()
+        public bool Load(ref CDynMemoryReader r, ref CUberData data)
         {
-            throw new NotImplementedException();
+            uint n = 0;
+            string s;
+
+            if (!r.Get(ref n)) return false;
+            if (n == 0) return true;
+
+            s = r.ReadPascalStr();
+            if (s == "") return false;
+            Name = s;
+
+            if (!Loaders.LoadArray(ref Parts, ref r, ref data)) return false;
+
+            return true;
         }
     }
 }
