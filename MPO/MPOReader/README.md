@@ -1,0 +1,1 @@
+﻿A basic tool to read the map_objects section of MPO files into a class.
