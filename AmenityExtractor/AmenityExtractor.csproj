@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MPO\MPOReader\MPOReader.csproj" />
+    <ProjectReference Include="..\UBR\PS1Ubr\PS1Ubr.csproj" />
+  </ItemGroup>
+
+</Project>
