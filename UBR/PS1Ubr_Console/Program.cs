@@ -9,7 +9,7 @@ namespace PS1Ubr
         static void Main()
         {
             Console.WriteLine("Starting");
-            var fs = new FileStream("uber.ubr", FileMode.Open); // Either change this to an absolute path, or make sure this file is in the bin folder before running.
+            var fs = new FileStream("C:\\Seafile\\Seafile\\Code\\PS1Ubr\\PS1Ubr\\uber.ubr", FileMode.Open); // Either change this to an absolute path, or make sure this file is in the bin folder before running.
             var r = new CDynMemoryReader(fs);
 
             var uberData = new CUberData();

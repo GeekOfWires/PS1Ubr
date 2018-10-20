@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27004.2002
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PS1Ubr", "PS1Ubr\PS1Ubr.csproj", "{B5FBADA4-243B-4454-8EE0-AF2D204ACF63}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PS1Ubr", "UBR\PS1Ubr\PS1Ubr.csproj", "{B5FBADA4-243B-4454-8EE0-AF2D204ACF63}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{12F132AB-52A0-425F-98CC-0F357E210CBE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PS1Ubr_Console", "PS1Ubr_Console\PS1Ubr_Console.csproj", "{B9666482-7247-4E5B-9155-9A878C539B7E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PS1Ubr_Console", "UBR\PS1Ubr_Console\PS1Ubr_Console.csproj", "{B9666482-7247-4E5B-9155-9A878C539B7E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UBR", "UBR", "{0409868E-61EA-4C80-B379-081078E933BF}"
 EndProject
