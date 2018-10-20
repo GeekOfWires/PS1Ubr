@@ -1,19 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace PS1Ubr
 {
-    public struct CVec3f
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct CVec4f
     {
-        public CVec3f(float x, float y, float z)
+        public CVec4f(float w, float x, float y, float z)
         {
+            this.W = w;
             this.X = x;
             this.Y = y;
             this.Z = z;
         }
+
+        /// <summary>
+        /// W Component
+        /// </summary>
+        public float W { get; set; }
 
         /// <summary>
         /// X Component
@@ -38,6 +46,6 @@ namespace PS1Ubr
         /// <summary>
         /// Normalize
         /// </summary>
-        public CVec3f Normalize => new CVec3f(X / Magnitude, Y / Magnitude, Z / Magnitude);
+        public CVec4f Normalize => new CVec4f(W / Magnitude, X / Magnitude, Y / Magnitude, Z / Magnitude);
     }
 }
