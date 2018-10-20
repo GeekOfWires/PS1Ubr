@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PS1Ubr_Console", "PS1Ubr_Co
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UBR", "UBR", "{0409868E-61EA-4C80-B379-081078E933BF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MPO", "MPO", "{C5CF5386-075F-42CB-9A28-16B5798C5F5C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MPOReader", "MPO\MPOReader\MPOReader.csproj", "{FFDC3799-35BC-4244-8651-AB8C2054747A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +29,10 @@ Global
 		{B9666482-7247-4E5B-9155-9A878C539B7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B9666482-7247-4E5B-9155-9A878C539B7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B9666482-7247-4E5B-9155-9A878C539B7E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FFDC3799-35BC-4244-8651-AB8C2054747A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FFDC3799-35BC-4244-8651-AB8C2054747A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FFDC3799-35BC-4244-8651-AB8C2054747A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FFDC3799-35BC-4244-8651-AB8C2054747A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -32,6 +40,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{B5FBADA4-243B-4454-8EE0-AF2D204ACF63} = {0409868E-61EA-4C80-B379-081078E933BF}
 		{B9666482-7247-4E5B-9155-9A878C539B7E} = {0409868E-61EA-4C80-B379-081078E933BF}
+		{FFDC3799-35BC-4244-8651-AB8C2054747A} = {C5CF5386-075F-42CB-9A28-16B5798C5F5C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9DAABC0F-96A0-4A8C-B1A4-AC5FA448176F}
