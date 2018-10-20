@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Security.Policy;
-using System.Linq;
 using PS1Ubr.UberClasses;
 
 namespace PS1Ubr

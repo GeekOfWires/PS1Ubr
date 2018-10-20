@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace PS1Ubr
+﻿namespace PS1Ubr
 {
     public class CExternalModelInstance : ILoadable
     {
