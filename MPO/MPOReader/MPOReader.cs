@@ -6,7 +6,7 @@ using System.Text;
 
 namespace MPOReader
 {
-    public class MPOReader
+    public static class MPOReader
     {
         public static List<MapObject> ReadMPOFile(string filePath)
         {
