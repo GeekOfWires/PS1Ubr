@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace MPOReader
 {
@@ -18,5 +19,7 @@ namespace MPOReader
 
         public string ObjectType { get; set; }
         public string ObjectName { get; set; }
+
+        public string WarpCoordinates => String.Join(" ", new List<int>{(int) Math.Round(HorizontalPosition), (int)Math.Round(VerticalPosition), (int) Math.Round(HeightPosition) });
     }
 }
