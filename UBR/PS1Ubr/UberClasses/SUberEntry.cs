@@ -6,16 +6,16 @@ namespace PS1Ubr
     public struct SUberEntry
     {
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
-        internal string Name;
+        public string Name;
 
-        internal uint LookupOffset;
-        internal uint U32Offset;
-        internal uint MeshDataOffset;
-        internal uint ModelDataOffset;
+        public uint LookupOffset;
+        public uint U32Offset;
+        public uint MeshDataOffset;
+        public uint ModelDataOffset;
     }
 
     public struct SUberEntry_4
     {
-        internal uint A;
+        public uint A;
     }
 }
