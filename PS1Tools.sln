@@ -15,7 +15,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MPO", "MPO", "{C5CF5386-075
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MPOReader", "MPO\MPOReader\MPOReader.csproj", "{FFDC3799-35BC-4244-8651-AB8C2054747A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AmenityExtractor", "AmenityExtractor\AmenityExtractor.csproj", "{5FB43B5C-FD4F-4121-BF34-6827DB42DD07}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AmenityExtractor", "AmenityExtractor\AmenityExtractor.csproj", "{5FB43B5C-FD4F-4121-BF34-6827DB42DD07}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MPOReader_Console", "MPO\MPOReader_Console\MPOReader_Console.csproj", "{B01DE778-902D-48AC-A62E-6CE3BFF48429}"
 EndProject
 Global
