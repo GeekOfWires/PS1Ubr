@@ -8,10 +8,12 @@ namespace MPOReader
 {
     public static class MPOReader
     {
-        public static List<MapObject> ReadMPOFile(string filePath)
+        public static List<MapObject> ReadMPOFile(string folderPath, string mapNumber)
         {
-            var mapNames = ReadMapNames(filePath);
-            var mapObjects = ReadMapObjects(filePath, mapNames);
+            var mpoPath = $"{folderPath}\\contents_map{mapNumber}.mpo";
+            var mapNames = ReadMapNames(mpoPath);
+            var pseLinks = LSTReader.ReadLSTFile(folderPath, mapNumber);
+            var mapObjects = ReadMapObjects(mpoPath, mapNames, pseLinks);
 
             return mapObjects;
         }
@@ -51,7 +53,7 @@ namespace MPOReader
             }
         }
 
-        private static List<MapObject> ReadMapObjects(string filePath, List<string> mapNames)
+        private static List<MapObject> ReadMapObjects(string filePath, List<string> mapNames, List<Pse_link> pseLinks)
         {
             var mapObjectsStart = FindBytes(filePath, Encoding.ASCII.GetBytes("map_objects")) + 18; // Skip to end of map_objects + 7 blank bytes
             var mapObjects = new List<MapObject>();
@@ -87,6 +89,7 @@ namespace MPOReader
 
                     mapObject.ObjectName = mapNames[mapObject.MapNamesObjectNameIndex - 1];
                     mapObject.ObjectType = mapNames[mapObject.MapNamesObjectTypeIndex];
+                    mapObject.LstType = pseLinks.SingleOrDefault(x => x.ObjectName == mapObject.ObjectName)?.LstFile;
 
                     mapObjects.Add(mapObject);
                 }

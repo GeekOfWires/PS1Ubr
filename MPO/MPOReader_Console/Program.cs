@@ -8,7 +8,10 @@ namespace MPOReader_Console
     {
         static void Main(string[] args)
         {
-            var mpoData = MPOReader.MPOReader.ReadMPOFile("contents_map04.mpo"); // Change this to an absolute path or make sure the .mpo is in the bin folder
+            var mapNumber = "04";
+
+            // Use an absolute path to the extracted map-resources.pak location or make sure the .mpo and *.lst files are in the bin folder
+            var mpoData = MPOReader.MPOReader.ReadMPOFile($"C:\\Temp\\Planetside (Mod ready)\\Planetside\\map_resources.pak-out", mapNumber); 
         }
     }
 }
