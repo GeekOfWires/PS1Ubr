@@ -180,7 +180,6 @@ namespace PS1Ubr
 
         public bool Load(ref CDynMemoryReader r, ref CUberData data)
         {
-            Console.WriteLine($"Loading {GetType().Name}");
             string s0 = r.ReadPascalStr();
             if (s0 == "") return false;
             MaterialName = s0;

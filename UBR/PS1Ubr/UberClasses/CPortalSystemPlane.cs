@@ -10,7 +10,6 @@ namespace PS1Ubr
 
         public bool Load(ref CDynMemoryReader r, ref CUberData data)
         {
-            Console.WriteLine($"Loading {GetType().Name}");
             float temp = 0;
             if (!r.Get(ref temp)) return false;
             Normal.X = temp;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -65,24 +66,44 @@ namespace PS1Ubr
 
         public bool GetRaw<T>(ref List<T> list, uint numOfObjects)
         {
-            var objectSize = Marshal.SizeOf(typeof(T));
+            var type = typeof(T);
+            var objectSize = Marshal.SizeOf(type);
+
+            if (type == typeof(byte))
+            {
+                // We can short circuit for List<byte> and just return the bytes as a new List
+                var bytes = GetBytes(objectSize * (int) numOfObjects);
+                list.AddRange((IEnumerable<T>) bytes.ToList());
+                return true;
+            }
 
             for (int i = 0; i < numOfObjects; i++)
             {
                 T obj;
                 var bytes = GetBytes(objectSize);
 
-                GCHandle handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
-                try
-                {
-                    obj = (T)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(T));
-                }
-                finally
-                {
-                    handle.Free();
-                }
+                object primitiveObj = null;
+                if (type == typeof(uint)) primitiveObj = BitConverter.ToUInt32(bytes, 0);
 
-                list.Add(obj);
+                if (primitiveObj != null)
+                {
+                    // If this is a primitive type e.g. uint32 we don't need to call the Marshaller
+                    list.Add((T)primitiveObj);
+                }
+                else
+                {
+                    GCHandle handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+                    try
+                    {
+                        obj = (T)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(T));
+                    }
+                    finally
+                    {
+                        handle.Free();
+                    }
+
+                    list.Add(obj);
+                }
             }
 
             return true;
