@@ -26,7 +26,7 @@ namespace PS1Ubr
         {
             if (UBRCache.ContainsKey(entityName.ToLower())) return UBRCache[entityName.ToLower()];
 
-            var mesh = uberData.FetchMeshSystem(entityName.ToCharArray(), new CMeshSystem());
+            var mesh = uberData.FetchMeshSystem(entityName.ToLower().ToCharArray(), new CMeshSystem());
             UBRCache.Add(entityName.ToLower(), mesh);
             return mesh;
         }
