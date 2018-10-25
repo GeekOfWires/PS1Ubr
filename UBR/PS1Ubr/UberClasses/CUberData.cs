@@ -13,6 +13,7 @@ namespace PS1Ubr
         public List<uint> LookupData = new List<uint>();
         public List<uint> U32Data = new List<uint>();
         public List<byte> MeshData = new List<byte>();
+        private byte[] MeshDataBytes = null; // Populated after CUberData is loaded to avoid excessive .ToArray() calls on MeshData List
         public List<byte> ModelData = new List<byte>();
 
         protected CDynMemoryBuffer m_ModelDataCache = new CDynMemoryBuffer();
@@ -62,6 +63,7 @@ namespace PS1Ubr
             Console.WriteLine($"Loading {hdr.MeshDataSize} MeshDataSize");
             MeshData.Capacity = (int) hdr.MeshDataSize;
             if (!r.GetRaw(ref MeshData, hdr.MeshDataSize)) return false;
+            MeshDataBytes = MeshData.ToArray();
 
             Console.WriteLine($"Loading {hdr.U32Count} U32Count");
             U32Data.Capacity = (int) hdr.U32Count;
@@ -127,7 +129,7 @@ namespace PS1Ubr
         {
             if (m_pMeshDataEnd - m_pMeshDataCur < length) throw new IndexOutOfRangeException();
             var bytes = new byte[length];
-            Array.Copy(MeshData.ToArray(), (int) m_pMeshDataCur, bytes, 0, length);
+            Array.Copy(MeshDataBytes, (int) m_pMeshDataCur, bytes, 0, length);
             m_pMeshDataCur += length;
             return bytes;
         }

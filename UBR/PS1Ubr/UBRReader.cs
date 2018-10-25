@@ -7,6 +7,8 @@ namespace PS1Ubr
 {
     public static class UBRReader
     {
+        private static readonly Dictionary<string, CMeshSystem> UBRCache = new Dictionary<string, CMeshSystem>();
+
         public static CUberData GetUbrData(string filePath)
         {
             using (var fs = new FileStream(filePath, FileMode.Open))
@@ -22,7 +24,11 @@ namespace PS1Ubr
 
         public static CMeshSystem GetMeshSystem(string entityName, ref CUberData uberData)
         {
-            return uberData.FetchMeshSystem(entityName.ToCharArray(), new CMeshSystem());
+            if (UBRCache.ContainsKey(entityName.ToLower())) return UBRCache[entityName.ToLower()];
+
+            var mesh = uberData.FetchMeshSystem(entityName.ToLower().ToCharArray(), new CMeshSystem());
+            UBRCache.Add(entityName.ToLower(), mesh);
+            return mesh;
         }
     }
 }
