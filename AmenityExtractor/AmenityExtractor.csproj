@@ -7,11 +7,24 @@
 
   <ItemGroup>
     <PackageReference Include="NETStandard.Library" Version="2.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\MPO\MPOReader\MPOReader.csproj" />
     <ProjectReference Include="..\UBR\PS1Ubr\PS1Ubr.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="EntitiesWithGuids.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="RelativeObjectsToLoad.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="StructuresWithGuids.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
