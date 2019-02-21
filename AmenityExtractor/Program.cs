@@ -21,78 +21,6 @@ namespace AmenityExtractor
             List<string> relativeObjectsToLoad = new List<string>(File.ReadAllLines("RelativeObjectsToLoad.txt"));
             IEnumerable<string> allObjectsWithGuids = structuresWithGuids.Concat(entitiesWithGuids).ToList();
 
-            //var expectedIshundarCounts = new Dictionary<string, int>()
-            //{
-            //    {"amp_station", 1},
-            //    {"bunker_gauntlet", 5},
-            //    {"bunker_lg", 4},
-            //    {"bunker_sm", 5},
-            //    {"comm_station", 2},
-            //    {"comm_station_dsp", 1},
-            //    {"cryo_facility", 4},
-            //    {"hst", 2},
-            //    {"monolith", 1},
-            //    {"tech_plant", 4},
-            //    {"tower_a", 12},
-            //    {"tower_b", 11},
-            //    {"tower_c", 12},
-            //    {"warpgate", 4},
-            //    {"ad_billboard_inside", 59},
-            //    {"ad_billboard_inside_big", 8},
-            //    {"ad_billboard_outside", 8},
-            //    {"adv_med_terminal", 4},
-            //    {"air_vehicle_terminal", 8},
-            //    {"amp_cap_door", 2},
-            //    {"bfr_door", 12},
-            //    {"bfr_terminal", 12},
-            //    {"capture_core_fx", 12},
-            //    {"capture_terminal", 12},
-            //    {"cert_terminal", 32},
-            //    {"cryo_tubes", 16},
-            //    {"cs_comm_dish", 3},
-            //    {"door_dsp", 1},
-            //    {"dropship_pad_doors", 1},
-            //    {"dropship_vehicle_terminal", 1},
-            //    {"g_barricades", 4},
-            //    {"gen_control", 12},
-            //    {"generator", 12},
-            //    {"gr_door_ext", 339},
-            //    {"gr_door_garage_ext", 4},
-            //    {"gr_door_garage_int", 4},
-            //    {"gr_door_int", 259},
-            //    {"gr_door_main", 12},
-            //    {"gr_door_med", 8},
-            //    {"implant_terminal", 8},
-            //    {"implant_terminal_mech", 8},
-            //    {"llm_socket", 12},
-            //    {"lock_external", 12},
-            //    {"lock_garage", 4},
-            //    {"lock_small", 273},
-            //    {"locker_cryo", 460},
-            //    {"locker_med", 32},
-            //    {"main_terminal", 12},
-            //    {"manned_turret", 118},
-            //    {"mb_pad_creation", 20},
-            //    {"medical_terminal", 20},
-            //    {"order_terminal", 165},
-            //    {"pad_landing", 74},
-            //    {"pad_landing_frame", 50},
-            //    {"pad_landing_tower_frame", 24},
-            //    {"painbox", 12},
-            //    {"painbox_continuous", 12},
-            //    {"painbox_door_radius", 12},
-            //    {"painbox_door_radius_continuous", 36},
-            //    {"painbox_radius_continuous", 105 },
-            //    {"repair_silo", 24},
-            //    {"resource_silo", 12},
-            //    {"respawn_tube", 106},
-            //    {"secondary_capture", 35},
-            //    {"spawn_terminal", 83},
-            //    {"spawn_tube_door", 106},
-            //    {"vanu_module_node", 72},
-            //    {"vehicle_terminal", 12}
-            //};
-
             var mapNumber = "04";
             var mapResourcesFolder = "D:\\Planetside (Mod ready)\\Planetside\\map_resources.pak-out";
 
@@ -124,7 +52,7 @@ namespace AmenityExtractor
                 var uberData = uberDataList.Single(x => x.Entries.Select(y => y.Name).Contains(entry.ObjectType.ToLower()));
                 var baseMesh = UBRReader.GetMeshSystem(entry.ObjectType, ref uberData);
                 var rotationDegrees = MathFunctions.PS1RotationToDegrees(entry.HorizontalRotation);
-                var rotationRadians = MathFunctions.DegreesToRadians(rotationDegrees);
+                var baseRotationRadians = MathFunctions.DegreesToRadians(rotationDegrees);
 
                 var entryObject = new PlanetSideObject
                 {
@@ -133,7 +61,8 @@ namespace AmenityExtractor
                     ObjectType = entry.ObjectType,
                     AbsX = entry.HorizontalPosition,
                     AbsY = entry.VerticalPosition,
-                    AbsZ = entry.HeightPosition
+                    AbsZ = entry.HeightPosition,
+                    MapID = mpoData.IndexOf(entry) + 1
                 };
                 mapObjects.Add(entryObject);
                 id++;
@@ -147,8 +76,12 @@ namespace AmenityExtractor
                     if (!allObjectsWithGuids.Contains(meshItem.AssetName, StringComparer.OrdinalIgnoreCase)) continue;
                     if (peHiddens.Any(x => x.InstanceName == meshItem.InstanceName)) continue; // If a line is in the pe_hidden list it should be removed from the game world e.g. Neti pad_landing is removed where the BFR building now exists
 
-                    var (rotX, rotY) = MathFunctions.RotateXY(meshItem.Transform[12], meshItem.Transform[13], rotationRadians);
-                    var yaw = parentRotationClockwise + MathFunctions.TransformToRotationDegrees(meshItem.Transform).z;
+                    var (rotX, rotY) = MathFunctions.RotateXY(meshItem.Transform[12], meshItem.Transform[13], baseRotationRadians);
+                    var meshItemYaw = MathFunctions.TransformToRotationDegrees(meshItem.Transform);
+
+
+                    // Convert from CCW to CW and apply 180 degree offset
+                    var yaw = parentRotationClockwise + (360 - (180 - meshItemYaw));
 
                     mapObjects.Add(new PlanetSideObject
                     {
@@ -161,6 +94,7 @@ namespace AmenityExtractor
                         AbsZ = entry.HeightPosition + meshItem.Transform[14],
                         Yaw = MathFunctions.NormalizeDegrees((int)yaw)
                     });
+
                     id++;
                 }
 
@@ -168,7 +102,7 @@ namespace AmenityExtractor
                 {
                     if (!allObjectsWithGuids.Contains(line.ObjectName, StringComparer.OrdinalIgnoreCase)) continue;
 
-                    var (rotX, rotY) = MathFunctions.RotateXY(line.RelX, line.RelY, rotationRadians);
+                    var (rotX, rotY) = MathFunctions.RotateXY(line.RelX, line.RelY, baseRotationRadians);
                     mapObjects.Add(new PlanetSideObject
                     {
                         Id = id,
@@ -190,14 +124,14 @@ namespace AmenityExtractor
                     var uber = uberDataList.Single(x => x.Entries.Select(y => y.Name).Contains(line.ObjectName.ToLower()));
                     var mesh = UBRReader.GetMeshSystem(line.ObjectName, ref uber);
 
-                    var (parentRotX, parentRotY) = MathFunctions.RotateXY(line.RelX, line.RelY, rotationRadians);
+                    var (parentRotX, parentRotY) = MathFunctions.RotateXY(line.RelX, line.RelY, baseRotationRadians);
                     (float x, float y, float z) parentPos = (parentRotX, parentRotY, entry.VerticalPosition + line.RelZ);
 
                     foreach (var meshItem in mesh.PortalSystem.MeshItems)
                     {
                         if (!allObjectsWithGuids.Contains(meshItem.AssetName)) continue;
 
-                        var (rotX, rotY) = MathFunctions.RotateXY(meshItem.Transform[12], meshItem.Transform[13], rotationRadians);
+                        var (rotX, rotY) = MathFunctions.RotateXY(meshItem.Transform[12], meshItem.Transform[13], baseRotationRadians);
                         mapObjects.Add(new PlanetSideObject
                         {
                             Id = id,
@@ -233,18 +167,29 @@ namespace AmenityExtractor
             var diff = allObjectsWithGuids.Except(mapObjects.Select(x => x.ObjectType));
             foreach (var item in diff)
             {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"MISSING: {item}");
+                Console.ForegroundColor = ConsoleColor.White;
             }
 
-            //var objectCounts = mapObjects.GroupBy(x => x.ObjectType).Select(group => new { Name = group.Key, Count = group.Count() })
-            //    .OrderBy(x => x.Name);
-            //foreach (var item in objectCounts)
-            //{
-            //    if (item.Count != expectedIshundarCounts[item.Name]) Console.WriteLine($"Mismatch: {item.Name}, Got: {item.Count} Expected: {expectedIshundarCounts[item.Name]}");
-            //}
 
-            //var expectingTotal = expectedIshundarCounts.Sum(x => x.Value);
-            //Console.WriteLine($"Expecting {expectingTotal} entities, found {mapObjects.Count}. {expectingTotal - mapObjects.Count} missing");
+            // Sanity checking to make sure the amount of objects we've got matches a hand written list of expected objects
+            if (ExpectedCounts.MapToCounts.ContainsKey(mapNumber))
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                var expectedCounts = ExpectedCounts.MapToCounts[mapNumber];
+                var objectCounts = mapObjects.GroupBy(x => x.ObjectType).Select(group => new { Name = group.Key, Count = group.Count() })
+                    .OrderBy(x => x.Name);
+                foreach (var item in objectCounts)
+                {
+                    if (item.Count != expectedCounts[item.Name]) Console.WriteLine($"Mismatch: {item.Name}, Got: {item.Count} Expected: {expectedCounts[item.Name]}");
+                }
+
+                var expectingTotal = ExpectedCounts.ExpectedIshundarCounts.Sum(x => x.Value);
+
+                Console.WriteLine($"Expecting {expectingTotal} entities, found {mapObjects.Count}. {expectingTotal - mapObjects.Count} missing");
+                Console.ForegroundColor = ConsoleColor.White;
+            }
 
             // Assign GUIDs to loaded mapObjects
             GUIDAssigner.AssignGUIDs(mapObjects, structuresWithGuids, entitiesWithGuids);
@@ -254,4 +199,6 @@ namespace AmenityExtractor
             File.WriteAllText($"guids_map{mapNumber}.json", json);
         }
     }
+
+
 }
