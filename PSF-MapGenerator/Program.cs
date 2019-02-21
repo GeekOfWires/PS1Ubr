@@ -19,15 +19,17 @@ namespace PSF_MapGenerator
         private static List<int> _usedLockIds = new List<int>(); // List of lock ids already used to ensure no lock is assigned to two doors
         private static List<int> _usedDoorIds = new List<int>(); // List of door ids already used to ensure no door is assigned two locks (e.g. Akkan CC has two locks on top of each other for one door)
 
+        private static string _mapNumber = "04";
+
         static void Main(string[] args)
         {
-            var json = File.ReadAllText("guids_map04.json");
+            var json = File.ReadAllText($"guids_map{_mapNumber}.json");
             _objList = JsonConvert.DeserializeObject<List<PlanetSideObject>>(json);
 
-            var file = File.Create("map04.txt");
+            var file = File.Create($"map{_mapNumber}.txt");
             using (var writer = new System.IO.StreamWriter(file))
             {
-                writer.WriteLine("val map4 = new ZoneMap(\"map04\") {");
+                writer.WriteLine("val map" + _mapNumber.TrimStart('0') + " = new ZoneMap(\"map" + _mapNumber + "\") {");
 
                 foreach (var obj in _objList.Where(x => x.Owner == null))
                 {
@@ -87,7 +89,7 @@ namespace PSF_MapGenerator
             {
                 if (proximityTerminal.ObjectType == "pad_landing" || proximityTerminal.ObjectType == "repair_silo") return; // todo: temp to disable these as duplicates are happening
 
-                logWriter.WriteLine($"LocalObject({proximityTerminal.GUID}, ProximityTerminal.Constructor({proximityTerminal.ObjectType}))");
+                logWriter.WriteLine($"LocalObject({proximityTerminal.GUID}, ProximityTerminal.Constructor({proximityTerminal.ObjectType}, Vector3({proximityTerminal.AbsX}f, {proximityTerminal.AbsY}f, {proximityTerminal.AbsZ}f)))");
                 WriteObjectToBuilding(proximityTerminal, logWriter);
                 
             }
