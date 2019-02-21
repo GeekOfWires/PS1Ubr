@@ -172,7 +172,6 @@ namespace AmenityExtractor
                 Console.ForegroundColor = ConsoleColor.White;
             }
 
-
             // Sanity checking to make sure the amount of objects we've got matches a hand written list of expected objects
             if (ExpectedCounts.MapToCounts.ContainsKey(mapNumber))
             {
@@ -187,7 +186,10 @@ namespace AmenityExtractor
 
                 var expectingTotal = ExpectedCounts.ExpectedIshundarCounts.Sum(x => x.Value);
 
-                Console.WriteLine($"Expecting {expectingTotal} entities, found {mapObjects.Count}. {expectingTotal - mapObjects.Count} missing");
+                if (expectingTotal != mapObjects.Count)
+                {
+                    Console.WriteLine($"Expecting {expectingTotal} entities, found {mapObjects.Count}. {expectingTotal - mapObjects.Count} missing");
+                }
                 Console.ForegroundColor = ConsoleColor.White;
             }
 
@@ -197,6 +199,9 @@ namespace AmenityExtractor
             // Export to json file
             var json = JsonConvert.SerializeObject(mapObjects.OrderBy(x => x.GUID), Formatting.Indented);
             File.WriteAllText($"guids_map{mapNumber}.json", json);
+
+            Console.WriteLine("Done");
+            Console.ReadKey();
         }
     }
 

@@ -8,12 +8,6 @@ namespace AmenityExtractor
     // Building the counts is done by hand, refer to the order objects are initialized with GUIDs to try and find ranges for each continent.
     public static class ExpectedCounts
     {
-        public static Dictionary<string, Dictionary<string, int>> MapToCounts =
-            new Dictionary<string, Dictionary<string, int>>
-            {
-                {"04", ExpectedIshundarCounts}
-            };
-
         public static Dictionary<string, int> ExpectedIshundarCounts = new Dictionary<string, int>()
         {
             {"amp_station", 1},
@@ -85,5 +79,11 @@ namespace AmenityExtractor
             {"vanu_module_node", 72},
             {"vehicle_terminal", 12}
         };
+
+        public static Dictionary<string, Dictionary<string, int>> MapToCounts =
+            new Dictionary<string, Dictionary<string, int>>
+            {
+                {"04", ExpectedIshundarCounts}
+            };
     }
 }
