@@ -52,7 +52,7 @@ namespace PSF_MapGenerator
                     WriteCaptureConsole(children, writer);
                     WriteDoorsAndLocks(children, writer);
                     WriteLockers(children, writer);
-                    WriteTerminalsAndSpawnPads(children, writer);
+                    WriteTerminalsAndSpawnPads(children, obj, writer);
                     WriteResourceSilos(children, writer);
                     WriteSpawnTubes(children, obj, writer);
                     WriteProximityTerminals(children, writer);
@@ -83,15 +83,39 @@ namespace PSF_MapGenerator
 
         private static void WriteProximityTerminals(List<PlanetSideObject> children, StreamWriter logWriter)
         {
-            var proximityTerminalTypes = new[] { "adv_med_terminal", "repair_silo", "pad_landing", "medical_terminal" };
+            var proximityTerminalTypes = new[] { "adv_med_terminal", "repair_silo", "pad_landing_frame", "pad_landing_tower_frame", "medical_terminal" };
+
+
+           
 
             foreach (var proximityTerminal in children.Where(x => proximityTerminalTypes.Contains(x.ObjectType)))
             {
-                if (proximityTerminal.ObjectType == "pad_landing" || proximityTerminal.ObjectType == "repair_silo") return; // todo: temp to disable these as duplicates are happening
-
                 logWriter.WriteLine($"LocalObject({proximityTerminal.GUID}, ProximityTerminal.Constructor({proximityTerminal.ObjectType}, Vector3({proximityTerminal.AbsX}f, {proximityTerminal.AbsY}f, {proximityTerminal.AbsZ}f)))");
                 WriteObjectToBuilding(proximityTerminal, logWriter);
-                
+
+                // Some objects such as repair_silo and pad_landing_frame have special terminal objects (e.g. bfr rearm, ground vehicle repair, ground vehicle rearm) that should follow immediately after, with incrementing GUIDs.
+                // As such, these will be hardcoded for now.
+                switch (proximityTerminal.ObjectType)
+                {
+                    case "repair_silo":
+                        //startup.pak-out/game_objects.adb.lst:27235:add_property repair_silo has_aggregate_bfr_terminal true
+                        //startup.pak-out/game_objects.adb.lst:27236:add_property repair_silo has_aggregate_rearm_terminal true
+                        //startup.pak-out/game_objects.adb.lst:27237:add_property repair_silo has_aggregate_recharge_terminal true
+
+                        logWriter.WriteLine($"LocalObject({proximityTerminal.GUID + 1}, Terminal.Constructor(ground_rearm_terminal))");
+                        WriteObjectToBuilding(proximityTerminal, (int) proximityTerminal.GUID + 1, logWriter);
+                        break;
+                    case "pad_landing_frame":
+                    case "pad_landing_tower_frame":
+                        //startup.pak-out/game_objects.adb.lst:22518:add_property pad_landing_frame has_aggregate_rearm_terminal true
+                        //startup.pak-out/game_objects.adb.lst:22519:add_property pad_landing_frame has_aggregate_recharge_terminal true
+
+                        //startup.pak-out/game_objects.adb.lst:22534:add_property pad_landing_tower_frame has_aggregate_rearm_terminal true
+                        //startup.pak-out/game_objects.adb.lst:22535:add_property pad_landing_tower_frame has_aggregate_recharge_terminal true
+                        logWriter.WriteLine($"LocalObject({proximityTerminal.GUID + 1}, Terminal.Constructor(air_rearm_terminal))");
+                        WriteObjectToBuilding(proximityTerminal, (int) proximityTerminal.GUID + 1, logWriter);
+                        break;
+                }
             }
         }
 
@@ -121,18 +145,35 @@ namespace PSF_MapGenerator
             WriteObjectToBuilding(silo, logWriter);
         }
 
-        private static void WriteTerminalsAndSpawnPads(List<PlanetSideObject> children, StreamWriter logWriter)
+        private static void WriteTerminalsAndSpawnPads(List<PlanetSideObject> children, PlanetSideObject parent, StreamWriter logWriter)
         {
-            var terminalTypes = new[] { "order_terminal", "spawn_terminal", "pad_landing", "cert_terminal", "order_terminal", "repair_silo" };
-            var terminalTypesWithSpawnPad = new[] { "ground_vehicle_terminal", "air_vehicle_terminal" };
+            var terminalTypes = new[] { "order_terminal", "spawn_terminal", "cert_terminal", "order_terminal" };
+            var terminalTypesWithSpawnPad = new[] { "ground_vehicle_terminal", "air_vehicle_terminal", "vehicle_terminal", "vehicle_terminal_combined", "dropship_vehicle_terminal" };
 
             var allTerminalTypes = terminalTypes.Concat(terminalTypesWithSpawnPad);
 
-            var spawnPadList = children.Where(x => x.ObjectType == "mb_pad_creation").ToList();
+            var spawnPadList = children.Where(x => x.ObjectType == "mb_pad_creation" || x.ObjectType == "dropship_pad_doors").ToList();
 
             foreach (var terminal in children.Where(x => allTerminalTypes.Contains(x.ObjectType)))
             {
-                if (terminal.ObjectType == "pad_landing" || terminal.ObjectType == "repair_silo") return; // todo: temporary to disable these as duplicates are happening. need to investigate
+                // SoE in their infinite wisdom decided to remap vehicle_terminal to vehicle_terminal_combined in certain cases in the game_objects.adb file.
+                // As such, we have to work around it.
+
+                /*
+                    startup.pak-out/game_objects.adb.lst:1097:add_property amp_station child_remap vehicle_terminal vehicle_terminal_combined
+                    startup.pak-out/game_objects.adb.lst:7654:add_property comm_station child_remap vehicle_terminal vehicle_terminal_combined
+                    startup.pak-out/game_objects.adb.lst:7807:add_property cryo_facility child_remap vehicle_terminal vehicle_terminal_combined
+                 */
+                if (terminal.ObjectType == "vehicle_terminal" &&
+                    (parent.ObjectType == "amp_station" ||
+                     parent.ObjectType == "comm_station" ||
+                     parent.ObjectType == "cryo_facility"))
+                {
+                    terminal.ObjectType = "vehicle_terminal_combined";
+                }
+
+                // The scala codebase also uses ground_vehicle_terminal as the object type instead of vehicle_terminal, so we'll map to that for now.
+                if(terminal.ObjectType == "vehicle_terminal") { terminal.ObjectType = "ground_vehicle_terminal"; }
 
                 logWriter.WriteLine($"LocalObject({terminal.GUID}, Terminal.Constructor({terminal.ObjectType}))");
                 WriteObjectToBuilding(terminal, logWriter);
@@ -140,12 +181,13 @@ namespace PSF_MapGenerator
                 if (terminalTypesWithSpawnPad.Contains(terminal.ObjectType))
                 {
                     // find closest spawn pad to this terminal
+                    var searchDistance = 25;
                     var closestSpawnPad = spawnPadList.Select(x => new {
                                                                     Distance = DistanceN(new float[] { terminal.AbsX, terminal.AbsY, terminal.AbsZ },
                                                                                         new float[] { x.AbsX, x.AbsY, x.AbsZ }),
                                                                         x
                                                                     }
-                                                            ).OrderBy(x => x.Distance).First(x => x.Distance <= 25).x;
+                                                            ).OrderBy(x => x.Distance).First(x => x.Distance <= searchDistance).x;
 
                     logWriter.WriteLine($"LocalObject({closestSpawnPad.GUID}, VehicleSpawnPad.Constructor(Vector3({closestSpawnPad.AbsX}f, {closestSpawnPad.AbsY}f, {closestSpawnPad.AbsZ}f), Vector3(0f, 0f, 0f)))");
                     logWriter.WriteLine($"TerminalToSpawnPad({terminal.GUID}, {closestSpawnPad.GUID})");
@@ -204,7 +246,10 @@ namespace PSF_MapGenerator
                     continue;
                 }
 
-                logWriter.WriteLine($"LocalObject({doorLock.GUID}, IFFLock.Constructor(Vector3({doorLock.AbsX}f, {doorLock.AbsY}f, {doorLock.AbsZ}f), Vector3(0, 0, {doorLock.Yaw})))");
+                // Since tech plant garage locks are the only type where the lock does not face the same direction as the door we need to apply an offset for those, otherwise the door won't operate properly when checking inside/outside angles.
+                var yawOffset = doorLock.ObjectType == "lock_garage" ? 90 : 0;
+
+                logWriter.WriteLine($"LocalObject({doorLock.GUID}, IFFLock.Constructor(Vector3({doorLock.AbsX}f, {doorLock.AbsY}f, {doorLock.AbsZ}f), Vector3(0, 0, {doorLock.Yaw + yawOffset})))");
                 logWriter.WriteLine($"DoorToLock({closestDoor.GUID}, {doorLock.GUID})");
                 WriteObjectToBuilding(doorLock, logWriter);
 

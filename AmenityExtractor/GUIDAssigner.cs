@@ -20,13 +20,14 @@ namespace AmenityExtractor
         {
             var currentGUID = 1;
 
-            // Some objects reserve an extra 2 guids for unknown reasons currently, so we need to skip ahead if one of those is found
+            // Some objects reserve extra guids for unknown reasons currently, so we need to skip ahead if one of those is found
+            // A good example of this that was previously unknown is the repair_silo object. It has three extra GUIDs assigned after it for terminals: which are for BFR Rearming, Ground vehicle rearming and ground vehicle repair
+            // Adding these objects to the map is currently hardcoded within the PSF-MapGenerator project
             var objectsWithMultipleGuids = new Dictionary<string, int>()
             {
                 { "amp_station", 2 }, { "comm_station", 2 }, {"comm_station_dsp", 2}, {"cryo_facility", 2 }, {"tech_plant", 2}, {"pad_landing_frame", 2},
                 { "pad_landing_tower_frame", 2}, {"repair_silo", 3}
             };
-
 
             // First iterate over structures in the correct order
             foreach (var obj in mapObjects.Where(x => structuresWithGuids.Contains(x.ObjectType)).OrderBy(x => x.ObjectType).ThenBy(x => x.AbsX).ThenBy(x => x.AbsY).ThenBy(x => x.AbsZ))
