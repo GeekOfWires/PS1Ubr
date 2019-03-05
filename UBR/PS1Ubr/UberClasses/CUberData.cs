@@ -118,9 +118,9 @@ namespace PS1Ubr
 
         public CMeshSystem FetchMeshSystem(char[] pName, CMeshSystem system)
         {
-            var entry = Entries.FindIndex(x => x.Name == new string(pName));
+            var entry = Entries.FindIndex(x => x.Name.ToLower() == new string(pName).ToLower());
             var fetched = FetchMeshSystem((uint)entry, system);
-            if(!fetched) { throw new Exception($"Failed to fetch mesh system for object {pName}");}
+            if(!fetched) { throw new Exception($"Failed to fetch mesh system for object {new string(pName)}");}
 
             return system;
         }

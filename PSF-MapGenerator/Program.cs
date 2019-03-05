@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
+using System.Reflection;
 using AmenityExtractor;
 using Newtonsoft.Json;
 
@@ -15,56 +17,111 @@ namespace PSF_MapGenerator
         private static readonly string[] _buildingTypes = {"amp_station", "cryo_facility", "comm_station", "comm_station_dsp", "tech_plant"};
         private static readonly string[] _bunkerTypes = {"bunker_gauntlet", "bunker_lg", "bunker_sm"};
 
-        private static string[] _blacklistedTypes = {"monolith", "hst", "warpgate"}; // types to ignore for now
+        // monolith, hst, warpgate are ignored for now as the scala code isn't ready to handle them.
+        // BFR terminals/doors are ignored as top level elements as sanctuaries have them with no associated building. (repair_silo also has this problem, but currently is ignored in the AmenityExtrator project)
+        // Force domes have GUIDs but are currently classed as separate entities. The dome is controlled by sending GOAM 44 / 48 / 52 to the building GUID
+        private static string[] _blacklistedTypes = {"monolith", "hst", "warpgate", "bfr_door", "bfr_terminal", "force_dome_dsp_physics", "force_dome_comm_physics", "force_dome_cryo_physics", "force_dome_tech_physics", "force_dome_amp_physics" };
         private static List<int> _usedLockIds = new List<int>(); // List of lock ids already used to ensure no lock is assigned to two doors
         private static List<int> _usedDoorIds = new List<int>(); // List of door ids already used to ensure no door is assigned two locks (e.g. Akkan CC has two locks on top of each other for one door)
 
-        private static string _mapNumber = "04";
+
+        private static Dictionary<string, string> maps = new Dictionary<string, string> {
+                                                            { "Solsar", "01"},
+                                                            { "Hossin", "02"},
+                                                            { "Cyssor", "03" },
+                                                            { "Ishundar", "04" },
+                                                            { "Forseral", "05" },
+                                                            { "Ceryshen", "06" },
+                                                            { "Esamir", "07" },
+                                                            { "Oshur Prime", "08" },
+                                                            { "Searhus", "09" },
+                                                            { "Amerish", "10" },
+                                                            { "HOME1 (NEW CONGLOMORATE SANCTUARY)", "11" },
+                                                            { "HOME2 (TERRAN REPUBLIC SANCTUARY)", "12" },
+                                                            { "HOME3 (VANU SOVREIGNTY SANCTUARY)", "13" },
+//                                                            { "Nexus", "96" },
+//                                                            { "Desolation", "97" },
+//                                                            { "Ascension", "98" },
+//                                                            { "Extinction", "99" },
+        };
 
         static void Main(string[] args)
         {
-            var json = File.ReadAllText($"guids_map{_mapNumber}.json");
-            _objList = JsonConvert.DeserializeObject<List<PlanetSideObject>>(json);
-
-            var file = File.Create($"map{_mapNumber}.txt");
-            using (var writer = new System.IO.StreamWriter(file))
+            foreach (var map in maps)
             {
-                writer.WriteLine("val map" + _mapNumber.TrimStart('0') + " = new ZoneMap(\"map" + _mapNumber + "\") {");
+                var mapNumber = map.Value;
+                var mapName = map.Key;
 
-                foreach (var obj in _objList.Where(x => x.Owner == null))
+                var json = File.ReadAllText($"guids_map{mapNumber}.json");
+                _objList = JsonConvert.DeserializeObject<List<PlanetSideObject>>(json);
+
+                _lastTurretGUID = 5000;
+                _usedDoorIds = new List<int>();
+                _usedLockIds = new List<int>();
+
+                var file = File.Create($"map_{mapNumber}.txt");
+                using (var writer = new System.IO.StreamWriter(file))
                 {
-                    if (_blacklistedTypes.Contains(obj.ObjectType)) continue; // skip blacklisted types
+                    writer.WriteLine("val map" + mapNumber.TrimStart('0') + " = new ZoneMap(\"map" + mapNumber + "\") { // " + mapName);
 
-                    var children = _objList.Where(x => x.Owner == obj.Id).ToList();
+                    foreach (var obj in _objList.Where(x => x.Owner == null))
+                    {
+                        if (_blacklistedTypes.Contains(obj.ObjectType)) continue; // skip blacklisted types
 
-                    var structureType = "Building";
-                    if (_towerTypes.Contains(obj.ObjectType)) structureType = "Tower";
-                    if (_buildingTypes.Contains(obj.ObjectType)) structureType = "Facility";
-                    if (_bunkerTypes.Contains(obj.ObjectType)) structureType = "Bunker";
-                    //todo: Platform types
+                        var children = _objList.Where(x => x.Owner == obj.Id).ToList();
+
+                        var structureType = "Building";
+                        if (_towerTypes.Contains(obj.ObjectType)) structureType = "Tower";
+                        if (_buildingTypes.Contains(obj.ObjectType)) structureType = "Facility";
+                        if (_bunkerTypes.Contains(obj.ObjectType)) structureType = "Bunker";
+                        //todo: Platform types
 
 
-                    writer.WriteLine("");
-                    writer.WriteLine($"Building{obj.MapID}()");
-                    writer.WriteLine($"def Building{obj.MapID}() : Unit = {{ // Name: {obj.ObjectName} Type: {obj.ObjectType} GUID: {obj.GUID}, MapID: {obj.MapID}");
-                    writer.WriteLine($"LocalBuilding({obj.GUID}, {obj.MapID}, FoundationBuilder(Building.Structure(StructureType.{structureType}, Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f))))");
+                        writer.WriteLine("");
+                        writer.WriteLine($"Building{obj.MapID}()");
+                        writer.WriteLine($"def Building{obj.MapID}() : Unit = {{ // Name: {obj.ObjectName} Type: {obj.ObjectType} GUID: {obj.GUID}, MapID: {obj.MapID}");
+                        writer.WriteLine($"LocalBuilding({obj.GUID}, {obj.MapID}, FoundationBuilder(Building.Structure(StructureType.{structureType}, Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f))))");
 
-                    WriteCaptureConsole(children, writer);
-                    WriteDoorsAndLocks(children, writer);
-                    WriteLockers(children, writer);
-                    WriteTerminalsAndSpawnPads(children, obj, writer);
-                    WriteResourceSilos(children, writer);
-                    WriteSpawnTubes(children, obj, writer);
-                    WriteProximityTerminals(children, writer);
-                    WriteTurrets(children, writer);
+                        WriteCaptureConsole(children, writer);
+                        WriteDoorsAndLocks(children, writer);
+                        WriteLockers(children, writer);
+                        WriteTerminalsAndSpawnPads(children, obj, writer);
+                        WriteResourceSilos(children, writer);
+                        WriteSpawnTubes(children, obj, writer);
+                        WriteProximityTerminals(children, writer);
+                        WriteTurrets(children, writer);
+                        writer.WriteLine("}");
+                    }
+
+                    writer.WriteLine("Projectiles(this)");
                     writer.WriteLine("}");
+
+                    writer.Flush();
+                }
+            }
+
+            Console.WriteLine("Combining map files");
+            DirectoryInfo currentFolder = new DirectoryInfo(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location));
+            var files = currentFolder.GetFiles("map_*.txt").Select(f => f.FullName).ToArray();
+            var combinedFile = File.Create($"maps_combined.txt");
+            using (var writer = new System.IO.StreamWriter(combinedFile))
+            {
+                foreach (var file in files)
+                {
+                    using (StreamReader sr = File.OpenText(file))
+                    {
+                        string s;
+                        while ((s = sr.ReadLine()) != null)
+                        {
+                            writer.WriteLine(s);
+                        }
+                    }
                 }
 
-                writer.WriteLine("Projectiles(this)");
-                writer.WriteLine("}");
-
                 writer.Flush();
+                writer.Close();
             }
+                
 
             Console.WriteLine("Done");
             Console.ReadKey();
@@ -121,7 +178,9 @@ namespace PSF_MapGenerator
 
         private static void WriteSpawnTubes(List<PlanetSideObject> children, PlanetSideObject parent, StreamWriter logWriter)
         {
-            foreach (var spawnTube in children.Where(x => x.ObjectType == "respawn_tube"))
+            var respawnTubeTypes = new[] {"respawn_tube", "mb_respawn_tube"};
+
+            foreach (var spawnTube in children.Where(x => respawnTubeTypes.Contains(x.ObjectType)))
             {
                 if (_towerTypes.Contains(parent.ObjectType))
                 {
@@ -204,7 +263,7 @@ namespace PSF_MapGenerator
 
         private static void WriteLockers(List<PlanetSideObject> children, StreamWriter logWriter)
         {
-            var lockerTypes = new[] { "locker_cryo", "locker_med" };
+            var lockerTypes = new[] { "locker_cryo", "locker_med", "mb_locker" };
 
             foreach (var locker in children.Where(x => lockerTypes.Contains(x.ObjectType)))
             {
@@ -215,7 +274,7 @@ namespace PSF_MapGenerator
 
         private static void WriteDoorsAndLocks(List<PlanetSideObject> children, StreamWriter logWriter)
         {
-            var doorTypes = new[] { "gr_door_garage_int", "gr_door_int", "gr_door_med", "spawn_tube_door", "amp_cap_door", "door_dsp", "gr_door_ext", "gr_door_garage_ext", "gr_door_main" };
+            var doorTypes = new[] { "gr_door_garage_int", "gr_door_int", "gr_door_med", "spawn_tube_door", "amp_cap_door", "door_dsp", "gr_door_ext", "gr_door_garage_ext", "gr_door_main", "gr_door_mb_ext", "gr_door_mb_int", "gr_door_mb_lrg", "gr_door_mb_obsd", "gr_door_mb_orb", "door_spawn_mb" };
 
             var lockTypes = new[] { "lock_external", "lock_garage", "lock_small" };
 
