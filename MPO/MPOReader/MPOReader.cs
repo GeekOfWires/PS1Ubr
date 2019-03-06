@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -89,7 +90,7 @@ namespace MPOReader
 
                     mapObject.ObjectName = mapNames[mapObject.MapNamesObjectNameIndex - 1];
                     mapObject.ObjectType = mapNames[mapObject.MapNamesObjectTypeIndex];
-                    mapObject.LstType = pseLinks.SingleOrDefault(x => x.ObjectName == mapObject.ObjectName)?.LstFile;
+                    mapObject.LstType = pseLinks.SingleOrDefault(x => x.ObjectName.ToLower() == mapObject.ObjectName.ToLower())?.LstFile;
 
                     mapObjects.Add(mapObject);
                 }

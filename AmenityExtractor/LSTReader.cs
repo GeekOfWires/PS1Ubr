@@ -17,24 +17,27 @@ namespace PS1Ubr
 
                 foreach (var data in lstData)
                 {
-                    var line = Regex.Replace(data, @"\s+", " ").Split(" "); // Replace extra whitespace with a single occurence
-
-                    groundCover.Add(new GroundCover
+                    if (!string.IsNullOrWhiteSpace(data))
                     {
-                        LstType = line[0],
-                        ObjectType = line[1],
-                        Id = int.Parse(line[2]),
-                        AbsX = float.Parse(line[3]),
-                        AbsY = float.Parse(line[4]),
-                        AbsZ = float.Parse(line[5]),
-                        ScaleX = float.Parse(line[6]),
-                        ScaleY = float.Parse(line[7]),
-                        ScaleZ = float.Parse(line[8]),
-                        Pitch = int.Parse(line[9]),
-                        Yaw = int.Parse(line[10]),
-                        Roll = int.Parse(line[11]),
-                        ObjectName = line.Length >= 13 ? line[12] : null
-                    });
+                        var line = Regex.Replace(data, @"\s+", " ").Split(" "); // Replace extra whitespace with a single occurence
+                    
+                        groundCover.Add(new GroundCover
+                        {
+                            LstType = line[0],
+                            ObjectType = line[1],
+                            Id = int.Parse(line[2]),
+                            AbsX = float.Parse(line[3]),
+                            AbsY = float.Parse(line[4]),
+                            AbsZ = float.Parse(line[5]),
+                            ScaleX = float.Parse(line[6]),
+                            ScaleY = float.Parse(line[7]),
+                            ScaleZ = float.Parse(line[8]),
+                            Pitch = int.Parse(line[9]),
+                            Yaw = int.Parse(line[10]),
+                            Roll = int.Parse(line[11]),
+                            ObjectName = line.Length >= 13 ? line[12] : null
+                        });
+                    }
                 }
             }
 
