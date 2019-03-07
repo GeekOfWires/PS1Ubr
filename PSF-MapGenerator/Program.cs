@@ -20,7 +20,7 @@ namespace PSF_MapGenerator
         // monolith, hst, warpgate are ignored for now as the scala code isn't ready to handle them.
         // BFR terminals/doors are ignored as top level elements as sanctuaries have them with no associated building. (repair_silo also has this problem, but currently is ignored in the AmenityExtrator project)
         // Force domes have GUIDs but are currently classed as separate entities. The dome is controlled by sending GOAM 44 / 48 / 52 to the building GUID
-        private static string[] _blacklistedTypes = {"monolith", "hst", "warpgate", "bfr_door", "bfr_terminal", "force_dome_dsp_physics", "force_dome_comm_physics", "force_dome_cryo_physics", "force_dome_tech_physics", "force_dome_amp_physics" };
+        private static string[] _blacklistedTypes = {"monolith", "hst", "warpgate", "bfr_door", "bfr_terminal", "force_dome_dsp_physics", "force_dome_comm_physics", "force_dome_cryo_physics", "force_dome_tech_physics", "force_dome_amp_physics", "warpgate_small" };
         private static List<int> _usedLockIds = new List<int>(); // List of lock ids already used to ensure no lock is assigned to two doors
         private static List<int> _usedDoorIds = new List<int>(); // List of door ids already used to ensure no door is assigned two locks (e.g. Akkan CC has two locks on top of each other for one door)
 
@@ -39,10 +39,10 @@ namespace PSF_MapGenerator
                                                             { "HOME1 (NEW CONGLOMORATE SANCTUARY)", "11" },
                                                             { "HOME2 (TERRAN REPUBLIC SANCTUARY)", "12" },
                                                             { "HOME3 (VANU SOVREIGNTY SANCTUARY)", "13" },
-//                                                            { "Nexus", "96" },
-//                                                            { "Desolation", "97" },
-//                                                            { "Ascension", "98" },
-//                                                            { "Extinction", "99" },
+                                                            { "Nexus", "96" },
+                                                            { "Desolation", "97" },
+                                                            { "Ascension", "98" },
+                                                            { "Extinction", "99" },
         };
 
         static void Main(string[] args)
@@ -59,10 +59,30 @@ namespace PSF_MapGenerator
                 _usedDoorIds = new List<int>();
                 _usedLockIds = new List<int>();
 
-                var file = File.Create($"map_{mapNumber}.txt");
+                var file = File.Create($"Map{mapNumber}.scala");
                 using (var writer = new System.IO.StreamWriter(file))
                 {
-                    writer.WriteLine("val map" + mapNumber.TrimStart('0') + " = new ZoneMap(\"map" + mapNumber + "\") { // " + mapName);
+                    writer.WriteLine("package zonemaps");
+                    writer.WriteLine("");
+                    writer.WriteLine("import net.psforever.objects.zones.ZoneMap");
+                    writer.WriteLine("import net.psforever.objects.GlobalDefinitions._");
+                    writer.WriteLine("import net.psforever.objects.LocalProjectile");
+                    writer.WriteLine("import net.psforever.objects.ballistics.Projectile");
+                    writer.WriteLine("import net.psforever.objects.serverobject.doors.Door");
+                    writer.WriteLine("import net.psforever.objects.serverobject.implantmech.ImplantTerminalMech");
+                    writer.WriteLine("import net.psforever.objects.serverobject.locks.IFFLock");
+                    writer.WriteLine("import net.psforever.objects.serverobject.mblocker.Locker");
+                    writer.WriteLine("import net.psforever.objects.serverobject.pad.VehicleSpawnPad");
+                    writer.WriteLine("import net.psforever.objects.serverobject.structures.{Building, FoundationBuilder, StructureType, WarpGate}");
+                    writer.WriteLine("import net.psforever.objects.serverobject.terminals.{CaptureTerminal, ProximityTerminal, Terminal}");
+                    writer.WriteLine("import net.psforever.objects.serverobject.tube.SpawnTube");
+                    writer.WriteLine("import net.psforever.objects.serverobject.resourcesilo.ResourceSilo");
+                    writer.WriteLine("import net.psforever.objects.serverobject.turret.FacilityTurret");
+                    writer.WriteLine("import net.psforever.types.Vector3");
+                    writer.WriteLine("");
+                    writer.WriteLine($"object Map{mapNumber} {{");
+                    writer.WriteLine($"// {mapName}");
+                    writer.WriteLine("val ZoneMap = new ZoneMap(\"map" + mapNumber + "\") { ");
 
                     foreach (var obj in _objList.Where(x => x.Owner == null))
                     {
@@ -90,38 +110,15 @@ namespace PSF_MapGenerator
                         WriteSpawnTubes(children, obj, writer);
                         WriteProximityTerminals(children, writer);
                         WriteTurrets(children, writer);
+                        WriteImplantTerminals(children, writer);
                         writer.WriteLine("}");
                     }
 
-                    writer.WriteLine("Projectiles(this)");
                     writer.WriteLine("}");
-
+                    writer.WriteLine("}");
                     writer.Flush();
                 }
             }
-
-            Console.WriteLine("Combining map files");
-            DirectoryInfo currentFolder = new DirectoryInfo(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location));
-            var files = currentFolder.GetFiles("map_*.txt").Select(f => f.FullName).ToArray();
-            var combinedFile = File.Create($"maps_combined.txt");
-            using (var writer = new System.IO.StreamWriter(combinedFile))
-            {
-                foreach (var file in files)
-                {
-                    using (StreamReader sr = File.OpenText(file))
-                    {
-                        string s;
-                        while ((s = sr.ReadLine()) != null)
-                        {
-                            writer.WriteLine(s);
-                        }
-                    }
-                }
-
-                writer.Flush();
-                writer.Close();
-            }
-                
 
             Console.WriteLine("Done");
             Console.ReadKey();
@@ -131,10 +128,30 @@ namespace PSF_MapGenerator
         {
             foreach (var turret in children.Where(x => x.ObjectType == "manned_turret"))
             {
-                logWriter.WriteLine($"LocalObject({turret.GUID}, FacilityTurret.Constructor(manned_turret, Vector3({turret.AbsX}f, {turret.AbsY}f, {turret.AbsZ}f)))");
-                WriteObjectToBuilding(turret, logWriter);
+                logWriter.WriteLine($"LocalObject({turret.GUID}, FacilityTurret.Constructor(manned_turret, Vector3({turret.AbsX}f, {turret.AbsY}f, {turret.AbsZ}f)), owning_building_guid = {_objList.Single(x => x.Id == turret.Owner).GUID})");
                 logWriter.WriteLine($"TurretToWeapon({turret.GUID}, {_lastTurretGUID})");
                 _lastTurretGUID++;
+            }
+        }
+
+        private static void WriteImplantTerminals(List<PlanetSideObject> children, StreamWriter logWriter)
+        {
+            var terminalList = children.Where(x => x.ObjectType == "implant_terminal");
+
+            foreach (var terminalMech in children.Where(x => x.ObjectType == "implant_terminal_mech"))
+            {
+                logWriter.WriteLine($"LocalObject({terminalMech.GUID}, ImplantTerminalMech.Constructor, owning_building_guid = {_objList.Single(x => x.Id == terminalMech.Owner).GUID})");
+
+                var closestTerminal = terminalList.Select(x => new {
+                        Distance = DistanceN(new float[] { terminalMech.AbsX, terminalMech.AbsY, terminalMech.AbsZ },
+                            new float[] { x.AbsX, x.AbsY, x.AbsZ }),
+                        x
+                    }
+                ).OrderBy(x => x.Distance).First(x => x.Distance <= 5).x;
+
+                logWriter.WriteLine($"LocalObject({closestTerminal.GUID}, Terminal.Constructor(implant_terminal_interface), owning_building_guid = {_objList.Single(x => x.Id == closestTerminal.Owner).GUID})");
+
+                logWriter.WriteLine($"TerminalToInterface({terminalMech.GUID}, {closestTerminal.GUID})");
             }
         }
 
@@ -142,13 +159,9 @@ namespace PSF_MapGenerator
         {
             var proximityTerminalTypes = new[] { "adv_med_terminal", "repair_silo", "pad_landing_frame", "pad_landing_tower_frame", "medical_terminal" };
 
-
-           
-
             foreach (var proximityTerminal in children.Where(x => proximityTerminalTypes.Contains(x.ObjectType)))
             {
-                logWriter.WriteLine($"LocalObject({proximityTerminal.GUID}, ProximityTerminal.Constructor({proximityTerminal.ObjectType}, Vector3({proximityTerminal.AbsX}f, {proximityTerminal.AbsY}f, {proximityTerminal.AbsZ}f)))");
-                WriteObjectToBuilding(proximityTerminal, logWriter);
+                logWriter.WriteLine($"LocalObject({proximityTerminal.GUID}, ProximityTerminal.Constructor({proximityTerminal.ObjectType}, Vector3({proximityTerminal.AbsX}f, {proximityTerminal.AbsY}f, {proximityTerminal.AbsZ}f)), owning_building_guid = {_objList.Single(x => x.Id == proximityTerminal.Owner).GUID})");
 
                 // Some objects such as repair_silo and pad_landing_frame have special terminal objects (e.g. bfr rearm, ground vehicle repair, ground vehicle rearm) that should follow immediately after, with incrementing GUIDs.
                 // As such, these will be hardcoded for now.
@@ -159,8 +172,7 @@ namespace PSF_MapGenerator
                         //startup.pak-out/game_objects.adb.lst:27236:add_property repair_silo has_aggregate_rearm_terminal true
                         //startup.pak-out/game_objects.adb.lst:27237:add_property repair_silo has_aggregate_recharge_terminal true
 
-                        logWriter.WriteLine($"LocalObject({proximityTerminal.GUID + 1}, Terminal.Constructor(ground_rearm_terminal))");
-                        WriteObjectToBuilding(proximityTerminal, (int) proximityTerminal.GUID + 1, logWriter);
+                        logWriter.WriteLine($"LocalObject({proximityTerminal.GUID + 1}, Terminal.Constructor(ground_rearm_terminal), owning_building_guid = {_objList.Single(x => x.Id == proximityTerminal.Owner).GUID})");
                         break;
                     case "pad_landing_frame":
                     case "pad_landing_tower_frame":
@@ -169,8 +181,7 @@ namespace PSF_MapGenerator
 
                         //startup.pak-out/game_objects.adb.lst:22534:add_property pad_landing_tower_frame has_aggregate_rearm_terminal true
                         //startup.pak-out/game_objects.adb.lst:22535:add_property pad_landing_tower_frame has_aggregate_recharge_terminal true
-                        logWriter.WriteLine($"LocalObject({proximityTerminal.GUID + 1}, Terminal.Constructor(air_rearm_terminal))");
-                        WriteObjectToBuilding(proximityTerminal, (int) proximityTerminal.GUID + 1, logWriter);
+                        logWriter.WriteLine($"LocalObject({proximityTerminal.GUID + 1}, Terminal.Constructor(air_rearm_terminal), owning_building_guid = {_objList.Single(x => x.Id == proximityTerminal.Owner).GUID})");
                         break;
                 }
             }
@@ -184,14 +195,12 @@ namespace PSF_MapGenerator
             {
                 if (_towerTypes.Contains(parent.ObjectType))
                 {
-                    logWriter.WriteLine($"LocalObject({spawnTube.GUID}, SpawnTube.Constructor(respawn_tube_tower, Vector3({spawnTube.AbsX}f, {spawnTube.AbsY}f, {spawnTube.AbsZ}f), Vector3(0, 0, {spawnTube.Yaw})))");
+                    logWriter.WriteLine($"LocalObject({spawnTube.GUID}, SpawnTube.Constructor(respawn_tube_tower, Vector3({spawnTube.AbsX}f, {spawnTube.AbsY}f, {spawnTube.AbsZ}f), Vector3(0, 0, {spawnTube.Yaw})), owning_building_guid = {_objList.Single(x => x.Id == spawnTube.Owner).GUID})");
                 }
                 else
                 {
-                    logWriter.WriteLine($"LocalObject({spawnTube.GUID}, SpawnTube.Constructor(Vector3({spawnTube.AbsX}f, {spawnTube.AbsY}f, {spawnTube.AbsZ}f), Vector3(0, 0, {spawnTube.Yaw})))");
+                    logWriter.WriteLine($"LocalObject({spawnTube.GUID}, SpawnTube.Constructor(Vector3({spawnTube.AbsX}f, {spawnTube.AbsY}f, {spawnTube.AbsZ}f), Vector3(0, 0, {spawnTube.Yaw})), owning_building_guid = {_objList.Single(x => x.Id == spawnTube.Owner).GUID})");
                 }
-
-                WriteObjectToBuilding(spawnTube, logWriter);
             }
         }
 
@@ -200,8 +209,7 @@ namespace PSF_MapGenerator
             var silo = children.SingleOrDefault(x => x.ObjectType == "resource_silo");
             if (silo == null) return;
 
-            logWriter.WriteLine($"LocalObject({silo.GUID}, ResourceSilo.Constructor)");
-            WriteObjectToBuilding(silo, logWriter);
+            logWriter.WriteLine($"LocalObject({silo.GUID}, ResourceSilo.Constructor, owning_building_guid = {_objList.Single(x => x.Id == silo.Owner).GUID})");
         }
 
         private static void WriteTerminalsAndSpawnPads(List<PlanetSideObject> children, PlanetSideObject parent, StreamWriter logWriter)
@@ -234,8 +242,7 @@ namespace PSF_MapGenerator
                 // The scala codebase also uses ground_vehicle_terminal as the object type instead of vehicle_terminal, so we'll map to that for now.
                 if(terminal.ObjectType == "vehicle_terminal") { terminal.ObjectType = "ground_vehicle_terminal"; }
 
-                logWriter.WriteLine($"LocalObject({terminal.GUID}, Terminal.Constructor({terminal.ObjectType}))");
-                WriteObjectToBuilding(terminal, logWriter);
+                logWriter.WriteLine($"LocalObject({terminal.GUID}, Terminal.Constructor({terminal.ObjectType}), owning_building_guid = {_objList.Single(x => x.Id == terminal.Owner).GUID})");
 
                 if (terminalTypesWithSpawnPad.Contains(terminal.ObjectType))
                 {
@@ -248,9 +255,7 @@ namespace PSF_MapGenerator
                                                                     }
                                                             ).OrderBy(x => x.Distance).First(x => x.Distance <= searchDistance).x;
 
-                    logWriter.WriteLine($"LocalObject({closestSpawnPad.GUID}, VehicleSpawnPad.Constructor(Vector3({closestSpawnPad.AbsX}f, {closestSpawnPad.AbsY}f, {closestSpawnPad.AbsZ}f), Vector3(0f, 0f, 0f)))");
-                    logWriter.WriteLine($"TerminalToSpawnPad({terminal.GUID}, {closestSpawnPad.GUID})");
-                    WriteObjectToBuilding(closestSpawnPad, logWriter);
+                    logWriter.WriteLine($"LocalObject({closestSpawnPad.GUID}, VehicleSpawnPad.Constructor(Vector3({closestSpawnPad.AbsX}f, {closestSpawnPad.AbsY}f, {closestSpawnPad.AbsZ}f), Vector3(0f, 0f, 0f)), owning_building_guid = {_objList.Single(x => x.Id == closestSpawnPad.Owner).GUID}, terminal_guid = {terminal.GUID})");
                 }
             }
         }
@@ -267,8 +272,7 @@ namespace PSF_MapGenerator
 
             foreach (var locker in children.Where(x => lockerTypes.Contains(x.ObjectType)))
             {
-                logWriter.WriteLine($"LocalObject({locker.GUID}, Locker.Constructor(Vector3({locker.AbsX}f, {locker.AbsY}f, {locker.AbsZ}f)))");
-                WriteObjectToBuilding(locker, logWriter);
+                logWriter.WriteLine($"LocalObject({locker.GUID}, Locker.Constructor(Vector3({locker.AbsX}f, {locker.AbsY}f, {locker.AbsZ}f)), owning_building_guid = {_objList.Single(x => x.Id == locker.Owner).GUID})");
             }
         }
 
@@ -283,8 +287,7 @@ namespace PSF_MapGenerator
 
             foreach (var door in doorList)
             {
-                logWriter.WriteLine($"LocalObject({door.GUID}, Door.Constructor(Vector3({door.AbsX}f, {door.AbsY}f, {door.AbsZ}f)))");
-                WriteObjectToBuilding(door, logWriter);
+                logWriter.WriteLine($"LocalObject({door.GUID}, Door.Constructor(Vector3({door.AbsX}f, {door.AbsY}f, {door.AbsZ}f)), owning_building_guid = {_objList.Single(x => x.Id == door.Owner).GUID})");
             }
 
             foreach (var doorLock in lockList)
@@ -308,9 +311,7 @@ namespace PSF_MapGenerator
                 // Since tech plant garage locks are the only type where the lock does not face the same direction as the door we need to apply an offset for those, otherwise the door won't operate properly when checking inside/outside angles.
                 var yawOffset = doorLock.ObjectType == "lock_garage" ? 90 : 0;
 
-                logWriter.WriteLine($"LocalObject({doorLock.GUID}, IFFLock.Constructor(Vector3({doorLock.AbsX}f, {doorLock.AbsY}f, {doorLock.AbsZ}f), Vector3(0, 0, {doorLock.Yaw + yawOffset})))");
-                logWriter.WriteLine($"DoorToLock({closestDoor.GUID}, {doorLock.GUID})");
-                WriteObjectToBuilding(doorLock, logWriter);
+                logWriter.WriteLine($"LocalObject({doorLock.GUID}, IFFLock.Constructor(Vector3({doorLock.AbsX}f, {doorLock.AbsY}f, {doorLock.AbsZ}f), Vector3(0, 0, {doorLock.Yaw + yawOffset})), owning_building_guid = {_objList.Single(x => x.Id == doorLock.Owner).GUID}, door_guid = {closestDoor.GUID})");
 
                 _usedDoorIds.Add((int) closestDoor.GUID);
                 _usedLockIds.Add((int) doorLock.GUID);
@@ -327,21 +328,8 @@ namespace PSF_MapGenerator
             var objList = children.Where(x => captureTerminals.Contains(x.ObjectType));
             foreach (var obj in objList)
             {
-                logWriter.WriteLine($"LocalObject({obj.GUID}, CaptureTerminal.Constructor({obj.ObjectType}))");
-                WriteObjectToBuilding(obj, logWriter);
+                logWriter.WriteLine($"LocalObject({obj.GUID}, CaptureTerminal.Constructor({obj.ObjectType}), owning_building_guid = {_objList.Single(x => x.Id == obj.Owner).GUID})");
             }
-        }
-
-        private static void WriteObjectToBuilding(PlanetSideObject obj, StreamWriter logWriter)
-        {
-            var ownerGUID = _objList.Single(x => x.Id == obj.Owner).GUID;
-            logWriter.WriteLine($"ObjectToBuilding({obj.GUID}, {ownerGUID})");
-        }
-
-        private static void WriteObjectToBuilding(PlanetSideObject obj, int overrideGUID, StreamWriter logWriter)
-        {
-            var ownerGUID = _objList.Single(x => x.Id == obj.Owner).GUID;
-            logWriter.WriteLine($"ObjectToBuilding({overrideGUID}, {ownerGUID})");
         }
     }
 }
