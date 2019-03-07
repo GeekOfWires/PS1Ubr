@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -7,9 +9,11 @@ namespace PS1Ubr
 {
     public static class LSTReader
     {
-        public static List<GroundCover> ReadGroundCoverLST(string mapResourcesFolder, string mapNumber)
+        public static List<GroundCover> ReadGroundCoverLST(string basePath, string mapNumber)
         {
-            var lst = $"{mapResourcesFolder}\\groundcover_map{mapNumber}.lst";
+            var allLstFiles = Directory.GetFiles(basePath, "*.lst", SearchOption.AllDirectories);
+            var lst = allLstFiles.Single(x => x.EndsWith($"groundcover_map{mapNumber}.lst"));
+
             var groundCover = new List<GroundCover>();
             if (System.IO.File.Exists(lst))
             {
@@ -46,8 +50,9 @@ namespace PS1Ubr
 
         public static (List<Pe_Hidden> peHiddens, List<Pe_Edit> peEdits, List<Pse_RelativeObject> pseRelativeObjects) ReadLSTFile(string mapResourcesFolder, string objectType, string entryLstType)
         {
-            // First read the base .lst file with the pe_edit lines
-            var baseLst = $"{mapResourcesFolder}\\{objectType}.lst";
+            // First read the base .lst file with the pe_edit lines e.g. amp_station.lst
+            var allLstFiles = Directory.GetFiles(mapResourcesFolder, "*.lst", SearchOption.AllDirectories);
+            var baseLst = allLstFiles.SingleOrDefault(x => x.EndsWith($"{objectType}.lst"));
 
             var peEdits = new List<Pe_Edit>();
             var peHiddens = new List<Pe_Hidden>();
@@ -84,8 +89,8 @@ namespace PS1Ubr
                 }
             }
 
-            // Then read the additional .lst file for this type if applicable with the pse_relativeobject lines
-            var additionalLst = $"{mapResourcesFolder}\\{entryLstType}.lst";
+            // Then read the additional .lst file for this type if applicable with the pse_relativeobject lines e.g. amp_station_3.lst
+            var additionalLst = allLstFiles.SingleOrDefault(x => x.EndsWith($"{entryLstType}.lst"));
             var pseRelativeObjects = new List<Pse_RelativeObject>();
 
             if (System.IO.File.Exists(additionalLst))

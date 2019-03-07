@@ -11,7 +11,9 @@ namespace MPOReader
     {
         public static List<MapObject> ReadMPOFile(string folderPath, string mapNumber)
         {
-            var mpoPath = $"{folderPath}\\contents_map{mapNumber}.mpo";
+            var mpoList = Directory.GetFiles(folderPath, "*.mpo", SearchOption.AllDirectories);
+            var mpoPath = mpoList.Single(x => x.EndsWith($"contents_map{mapNumber}.mpo"));
+
             var mapNames = ReadMapNames(mpoPath);
             var pseLinks = LSTReader.ReadLSTFile(folderPath, mapNumber);
             var mapObjects = ReadMapObjects(mpoPath, mapNames, pseLinks);

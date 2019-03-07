@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
+using System.Xml;
 
 namespace MPOReader
 {
@@ -8,9 +11,11 @@ namespace MPOReader
     // Reads the contents_map*.lst files to get the associated lst file for each object type
     static class LSTReader
     {
-        public static List<Pse_link> ReadLSTFile(string lstPath, string mapNumber)
+        public static List<Pse_link> ReadLSTFile(string basePath, string mapNumber)
         {
-            var lstData = System.IO.File.ReadAllLines($"{lstPath}\\objects_map{mapNumber}.lst");
+            var allLstFiles = Directory.GetFiles(basePath, "*.lst", SearchOption.AllDirectories);
+            var lstFullPath = allLstFiles.Single(x => x.EndsWith($"objects_map{mapNumber}.lst"));
+            var lstData = System.IO.File.ReadAllLines(lstFullPath);
 
             var pseLinks = new List<Pse_link>();
             foreach (var data in lstData)
