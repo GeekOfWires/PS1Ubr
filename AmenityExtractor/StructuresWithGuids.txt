@@ -26,3 +26,4 @@ vt_dropship
 vt_spawn
 vt_vehicle
 warpgate
+warpgate_small

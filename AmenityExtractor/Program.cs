@@ -7,7 +7,9 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using PS1Ubr;
 using System.Threading.Tasks;
+using System.Xml;
 using Newtonsoft.Json;
+using Formatting = Newtonsoft.Json.Formatting;
 
 namespace AmenityExtractor
 {
@@ -34,18 +36,19 @@ namespace AmenityExtractor
                                                             { "HOME1 (NEW CONGLOMORATE SANCTUARY)", "11" },
                                                             { "HOME2 (TERRAN REPUBLIC SANCTUARY)", "12" },
                                                             { "HOME3 (VANU SOVREIGNTY SANCTUARY)", "13" },
-//                                                            { "Nexus", "96" },
-//                                                            { "Desolation", "97" },
-//                                                            { "Ascension", "98" },
-//                                                            { "Extinction", "99" },
+                                                            { "Nexus", "96" },
+                                                            { "Desolation", "97" },
+                                                            { "Ascension", "98" },
+                                                            { "Extinction", "99" },
             };
-            var mapResourcesFolder = "D:\\Planetside (Mod ready)\\Planetside\\map_resources.pak-out";
+
+            // Path to the mod ready planetside folder that has everything pre-extracted from the pak files.
+            var planetsideModReadyFolder = "D:\\Planetside (Mod ready)\\Planetside";
 
             
-
             // Load all *.ubr files
             var uberDataList = new List<CUberData>();
-            Parallel.ForEach(Directory.GetFiles("C:\\temp\\ubr\\ubr", "*.ubr"),
+            Parallel.ForEach(Directory.GetFiles(planetsideModReadyFolder, "*.ubr", SearchOption.AllDirectories),
                 file => { uberDataList.Add(UBRReader.GetUbrData(file)); });
 
             foreach (var map in maps)
@@ -58,7 +61,7 @@ namespace AmenityExtractor
                 Console.WriteLine($"Processing map {mapNumber} - {mapName}");
 
                 // Read the contents_map mpo file, and the associated objects_map lst file
-                var mpoData = MPOReader.MPOReader.ReadMPOFile(mapResourcesFolder, mapNumber);
+                var mpoData = MPOReader.MPOReader.ReadMPOFile(planetsideModReadyFolder, mapNumber);
 
                 int id = 0;
 
@@ -75,7 +78,7 @@ namespace AmenityExtractor
                     if (entry.LstType != null)
                     {
                         (peHiddens, peEdits, pseRelativeObjects) =
-                            LSTReader.ReadLSTFile(mapResourcesFolder, entry.ObjectType, entry.LstType);
+                            LSTReader.ReadLSTFile(planetsideModReadyFolder, entry.ObjectType, entry.LstType);
                     }
 
                     // Get the root mesh for this object
@@ -145,6 +148,7 @@ namespace AmenityExtractor
                         if (!allObjectsWithGuids.Contains(line.ObjectName, StringComparer.OrdinalIgnoreCase)) continue;
 
                         var (rotX, rotY) = MathFunctions.RotateXY(line.RelX, line.RelY, baseRotationRadians);
+
                         mapObjects.Add(new PlanetSideObject
                         {
                             Id = id,
@@ -153,7 +157,7 @@ namespace AmenityExtractor
                             Owner = entryObject.Id,
                             AbsX = entry.HorizontalPosition + rotX,
                             AbsY = entry.VerticalPosition + rotY,
-                            AbsZ = entry.VerticalPosition + line.RelZ
+                            AbsZ = entry.HeightPosition + line.RelZ
                         });
                         id++;
                     }
@@ -195,13 +199,13 @@ namespace AmenityExtractor
                     }
                 }
 
-                var groundCoverData = LSTReader.ReadGroundCoverLST(mapResourcesFolder, mapNumber);
+                var groundCoverData = LSTReader.ReadGroundCoverLST(planetsideModReadyFolder, mapNumber);
                 foreach (var line in groundCoverData)
                 {
                     allObjects.Add(line.ObjectType);
                 }
 
-                // Load objects like monoliths / geowarps from the map groundcover file
+                // Load objects like monoliths / geowarps / warpgate_small from the map groundcover file
                 foreach (var line in groundCoverData.Where(x => allObjectsWithGuids.Contains(x.ObjectType)))
                 {
                     mapObjects.Add(new PlanetSideObject
@@ -211,7 +215,8 @@ namespace AmenityExtractor
                         ObjectType = line.ObjectType,
                         AbsX = line.AbsX,
                         AbsY = line.AbsY,
-                        AbsZ = line.AbsZ
+                        AbsZ = line.AbsZ,
+                        MapID = line.Id
                     });
                     id++;
                 }
@@ -277,10 +282,23 @@ namespace AmenityExtractor
                     Console.ForegroundColor = ConsoleColor.White;
                 }
 
+
                 // TODO: Fix sanctuary repair_silos
                 // Since repair silos are in the groundcover file they count as their own structure in sancs. Currently this isn't supported, so we need to remove them.
                 // A workaround is also in GUIDAssigner.AssignGUIDs to skip the requisite amount of GUIDs
                 if(mapNumber == "11" || mapNumber == "12" || mapNumber == "13") mapObjects.RemoveAll(x => x.ObjectType == "repair_silo");
+
+                // Battle islands for some reason have an X/Y offset applied to all coordinates in game_objects.adb.lst. Thus, we need to account for that.
+                //19318:add_property map99 mapOffsetX 1024.0
+                //19319:add_property map99 mapOffsetY 1024.0
+                if (new List<string>() {"96", "97", "98", "99"}.Contains(mapNumber))
+                {
+                    for (int i = 0; i < mapObjects.Count(); i++)
+                    {
+                        mapObjects[i].AbsX += 1024;
+                        mapObjects[i].AbsY += 1024;
+                    }
+                }
 
                 // Assign GUIDs to loaded mapObjects
                 GUIDAssigner.AssignGUIDs(mapObjects, structuresWithGuids, entitiesWithGuids);
