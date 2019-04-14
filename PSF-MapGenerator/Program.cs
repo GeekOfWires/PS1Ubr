@@ -194,14 +194,19 @@ namespace PSF_MapGenerator
 
             foreach (var spawnTube in children.Where(x => respawnTubeTypes.Contains(x.ObjectType)))
             {
+                var tubeType = "";
                 if (_towerTypes.Contains(parent.ObjectType))
                 {
-                    logWriter.WriteLine($"LocalObject({spawnTube.GUID}, SpawnTube.Constructor(respawn_tube_tower, Vector3({spawnTube.AbsX}f, {spawnTube.AbsY}f, {spawnTube.AbsZ}f), Vector3(0, 0, {spawnTube.Yaw})), owning_building_guid = {_objList.Single(x => x.Id == spawnTube.Owner).GUID})");
+                    tubeType = "respawn_tube_tower";
                 }
-                else
+                else if (parent.ObjectType.Contains("VT_building", StringComparison.OrdinalIgnoreCase))
                 {
-                    logWriter.WriteLine($"LocalObject({spawnTube.GUID}, SpawnTube.Constructor(Vector3({spawnTube.AbsX}f, {spawnTube.AbsY}f, {spawnTube.AbsZ}f), Vector3(0, 0, {spawnTube.Yaw})), owning_building_guid = {_objList.Single(x => x.Id == spawnTube.Owner).GUID})");
+                    tubeType = "respawn_tube_sanctuary";
                 }
+
+                logWriter.WriteLine(tubeType == ""
+                    ? $"LocalObject({spawnTube.GUID}, SpawnTube.Constructor(Vector3({spawnTube.AbsX}f, {spawnTube.AbsY}f, {spawnTube.AbsZ}f), Vector3(0, 0, {spawnTube.Yaw})), owning_building_guid = {_objList.Single(x => x.Id == spawnTube.Owner).GUID})"
+                    : $"LocalObject({spawnTube.GUID}, SpawnTube.Constructor({tubeType}, Vector3({spawnTube.AbsX}f, {spawnTube.AbsY}f, {spawnTube.AbsZ}f), Vector3(0, 0, {spawnTube.Yaw})), owning_building_guid = {_objList.Single(x => x.Id == spawnTube.Owner).GUID})");
             }
         }
 
