@@ -39,9 +39,9 @@ namespace AmenityExtractor
 
             //Repair silos in sanctuaries aren't assigned to a building and are added in the groundcover file. Currently this will break the GUID assignments as a repair_silo is suddenly a structure in it's own right
             // For now, skip them by jumping ahead after the last HART building in each Sanctuary.
-            objectNamesWithMultipleGuids.Add("Esamir_HART", 24);
-            objectNamesWithMultipleGuids.Add("Hart_Forseral", 24);
-            objectNamesWithMultipleGuids.Add("Hart_Hossin", 24);
+            objectNamesWithMultipleGuids.Add("Esamir_HART", 24); // VS - 6 repair silos
+            objectNamesWithMultipleGuids.Add("Hart_Forseral", 48); // TR - 12 repair silos
+            objectNamesWithMultipleGuids.Add("Hart_Hossin", 24); // NC - 6 repair silos
 
             // First iterate over structures in the correct order
             foreach (var obj in mapObjects.Where(x => structuresWithGuids.Contains(x.ObjectType, StringComparer.OrdinalIgnoreCase)).OrderBy(x => x.ObjectType).ThenBy(x => x.AbsX).ThenBy(x => x.AbsY).ThenBy(x => x.AbsZ))
