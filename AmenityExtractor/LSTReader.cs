@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -50,9 +51,9 @@ namespace PS1Ubr
 
         public static (List<Pe_Hidden> peHiddens, List<Pe_Edit> peEdits, List<Pse_RelativeObject> pseRelativeObjects) ReadLSTFile(string mapResourcesFolder, string objectType, string entryLstType)
         {
-            // First read the base .lst file with the pe_edit lines e.g. amp_station.lst
+            // First read the base .lst file with the pe_edit lines e.g. amp_station.lst if it exists
             var allLstFiles = Directory.GetFiles(mapResourcesFolder, "*.lst", SearchOption.AllDirectories);
-            var baseLst = allLstFiles.SingleOrDefault(x => x.EndsWith($"{objectType}.lst"));
+            var baseLst = allLstFiles.SingleOrDefault(x => x.EndsWith($"{objectType.ToLower()}.lst"));
 
             var peEdits = new List<Pe_Edit>();
             var peHiddens = new List<Pe_Hidden>();
@@ -89,33 +90,36 @@ namespace PS1Ubr
                 }
             }
 
-            // Then read the additional .lst file for this type if applicable with the pse_relativeobject lines e.g. amp_station_3.lst
-            var additionalLst = allLstFiles.SingleOrDefault(x => x.EndsWith($"{entryLstType}.lst"));
             var pseRelativeObjects = new List<Pse_RelativeObject>();
-
-            if (System.IO.File.Exists(additionalLst))
+            // Then read the additional .lst file for this type if applicable with the pse_relativeobject lines e.g. amp_station_3.lst
+            if (entryLstType != null)
             {
-                var lstData = System.IO.File.ReadAllLines(additionalLst);
+                var additionalLst = allLstFiles.SingleOrDefault(x => x.EndsWith($"{entryLstType.ToLower()}.lst"));
 
-                foreach (var data in lstData)
+                if (System.IO.File.Exists(additionalLst))
                 {
-                    var line = data.Split(" ");
+                    var lstData = System.IO.File.ReadAllLines(additionalLst);
 
-                    if (!string.IsNullOrWhiteSpace(data) && line.Length > 1)
+                    foreach (var data in lstData)
                     {
-                        pseRelativeObjects.Add(new Pse_RelativeObject
+                        var line = data.Split(" ");
+
+                        if (!string.IsNullOrWhiteSpace(data) && line.Length > 1)
                         {
-                            ObjectName = line[1],
-                            RelX = float.Parse(line[2]),
-                            RelY = float.Parse(line[3]),
-                            RelZ = float.Parse(line[4]),
-                            ScaleX = float.Parse(line[5]),
-                            ScaleY = float.Parse(line[6]),
-                            ScaleZ = float.Parse(line[7]),
-                            Pitch = float.Parse(line[8]),
-                            Yaw = float.Parse(line[9]),
-                            Roll = float.Parse(line[10])
-                        });
+                            pseRelativeObjects.Add(new Pse_RelativeObject
+                            {
+                                ObjectName = line[1],
+                                RelX = float.Parse(line[2]),
+                                RelY = float.Parse(line[3]),
+                                RelZ = float.Parse(line[4]),
+                                ScaleX = float.Parse(line[5]),
+                                ScaleY = float.Parse(line[6]),
+                                ScaleZ = float.Parse(line[7]),
+                                Pitch = float.Parse(line[8]),
+                                Yaw = float.Parse(line[9]),
+                                Roll = float.Parse(line[10])
+                            });
+                        }
                     }
                 }
             }

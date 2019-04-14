@@ -75,11 +75,7 @@ namespace AmenityExtractor
                     List<Pe_Edit> peEdits = new List<Pe_Edit>();
                     List<Pse_RelativeObject> pseRelativeObjects = new List<Pse_RelativeObject>();
                     List<Pe_Hidden> peHiddens = new List<Pe_Hidden>();
-                    if (entry.LstType != null)
-                    {
-                        (peHiddens, peEdits, pseRelativeObjects) =
-                            LSTReader.ReadLSTFile(planetsideModReadyFolder, entry.ObjectType, entry.LstType);
-                    }
+                    (peHiddens, peEdits, pseRelativeObjects) = LSTReader.ReadLSTFile(planetsideModReadyFolder, entry.ObjectType, entry.LstType);
 
                     // Get the root mesh for this object
                     var uberData = uberDataList.Single(x =>
