@@ -17,11 +17,12 @@ namespace PSF_MapGenerator
         private static readonly string[] _towerTypes =  { "tower_a", "tower_b", "tower_c" };
         private static readonly string[] _buildingTypes = {"amp_station", "cryo_facility", "comm_station", "comm_station_dsp", "tech_plant"};
         private static readonly string[] _bunkerTypes = {"bunker_gauntlet", "bunker_lg", "bunker_sm"};
+        private static readonly string[] _warpGateTypes = {"hst", "warpgate", "warpgate_small"};
 
         // monolith, hst, warpgate are ignored for now as the scala code isn't ready to handle them.
         // BFR terminals/doors are ignored as top level elements as sanctuaries have them with no associated building. (repair_silo also has this problem, but currently is ignored in the AmenityExtrator project)
         // Force domes have GUIDs but are currently classed as separate entities. The dome is controlled by sending GOAM 44 / 48 / 52 to the building GUID
-        private static string[] _blacklistedTypes = {"monolith", "hst", "warpgate", "bfr_door", "bfr_terminal", "force_dome_dsp_physics", "force_dome_comm_physics", "force_dome_cryo_physics", "force_dome_tech_physics", "force_dome_amp_physics", "warpgate_small" };
+        private static string[] _blacklistedTypes = {"monolith", "bfr_door", "bfr_terminal", "force_dome_dsp_physics", "force_dome_comm_physics", "force_dome_cryo_physics", "force_dome_tech_physics", "force_dome_amp_physics", "warpgate_small" };
         private static List<int> _usedLockIds = new List<int>(); // List of lock ids already used to ensure no lock is assigned to two doors
         private static List<int> _usedDoorIds = new List<int>(); // List of door ids already used to ensure no door is assigned two locks (e.g. Akkan CC has two locks on top of each other for one door)
 
@@ -101,7 +102,18 @@ namespace PSF_MapGenerator
                         writer.WriteLine("");
                         writer.WriteLine($"Building{obj.MapID}()");
                         writer.WriteLine($"def Building{obj.MapID}() : Unit = {{ // Name: {obj.ObjectName} Type: {obj.ObjectType} GUID: {obj.GUID}, MapID: {obj.MapID}");
-                        writer.WriteLine($"LocalBuilding({obj.GUID}, {obj.MapID}, FoundationBuilder(Building.Structure(StructureType.{structureType}, Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f))))");
+
+                        if (_warpGateTypes.Contains(obj.ObjectType.ToLower()))
+                        {
+                            writer.WriteLine(obj.ObjectType.ToLower() == "hst"
+                                ? $"LocalBuilding({obj.GUID}, {obj.MapID}, FoundationBuilder(WarpGate.Structure(Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f), hst)))"
+                                : $"LocalBuilding({obj.GUID}, {obj.MapID}, FoundationBuilder(WarpGate.Structure(Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f))))");
+                        }
+                        else
+                        {
+                            writer.WriteLine($"LocalBuilding({obj.GUID}, {obj.MapID}, FoundationBuilder(Building.Structure(StructureType.{structureType}, Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f))))");
+                        }
+                        
 
                         WriteCaptureConsole(children, writer);
                         WriteDoorsAndLocks(children, writer);
