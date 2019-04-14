@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
@@ -255,7 +256,11 @@ namespace PSF_MapGenerator
                                                                     }
                                                             ).OrderBy(x => x.Distance).First(x => x.Distance <= searchDistance).x;
 
-                    logWriter.WriteLine($"LocalObject({closestSpawnPad.GUID}, VehicleSpawnPad.Constructor(Vector3({closestSpawnPad.AbsX}f, {closestSpawnPad.AbsY}f, {closestSpawnPad.AbsZ}f), Vector3(0f, 0f, 0f)), owning_building_guid = {_objList.Single(x => x.Id == closestSpawnPad.Owner).GUID}, terminal_guid = {terminal.GUID})");
+                    // It appears that spawn pads have a default rotation that it +90 degrees from where it should be, presumably the model is rotated differently to the expected orientation - this can be handled here in the map generation
+                    // On top of that, some spawn pads also have an additional rotation (vehiclecreationzorientoffset) when spawning vehicles set in game_objects.adb.lst - this should be handled on the Scala side
+                    var adjustedYaw = closestSpawnPad.Yaw - 90;
+
+                    logWriter.WriteLine($"LocalObject({closestSpawnPad.GUID}, VehicleSpawnPad.Constructor({closestSpawnPad.ObjectType}, Vector3({closestSpawnPad.AbsX}f, {closestSpawnPad.AbsY}f, {closestSpawnPad.AbsZ}f), Vector3(0, 0,{adjustedYaw})), owning_building_guid = {_objList.Single(x => x.Id == closestSpawnPad.Owner).GUID}, terminal_guid = {terminal.GUID})");
                 }
             }
         }
