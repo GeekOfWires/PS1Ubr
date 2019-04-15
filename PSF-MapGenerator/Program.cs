@@ -22,7 +22,7 @@ namespace PSF_MapGenerator
         // monolith, hst, warpgate are ignored for now as the scala code isn't ready to handle them.
         // BFR terminals/doors are ignored as top level elements as sanctuaries have them with no associated building. (repair_silo also has this problem, but currently is ignored in the AmenityExtrator project)
         // Force domes have GUIDs but are currently classed as separate entities. The dome is controlled by sending GOAM 44 / 48 / 52 to the building GUID
-        private static string[] _blacklistedTypes = {"monolith", "bfr_door", "bfr_terminal", "force_dome_dsp_physics", "force_dome_comm_physics", "force_dome_cryo_physics", "force_dome_tech_physics", "force_dome_amp_physics", "warpgate_small" };
+        private static string[] _blacklistedTypes = {"monolith", "bfr_door", "bfr_terminal", "force_dome_dsp_physics", "force_dome_comm_physics", "force_dome_cryo_physics", "force_dome_tech_physics", "force_dome_amp_physics" };
         private static List<int> _usedLockIds = new List<int>(); // List of lock ids already used to ensure no lock is assigned to two doors
         private static List<int> _usedDoorIds = new List<int>(); // List of door ids already used to ensure no door is assigned two locks (e.g. Akkan CC has two locks on top of each other for one door)
 
