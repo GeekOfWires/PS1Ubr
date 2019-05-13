@@ -54,8 +54,10 @@ namespace AmenityExtractor
             }
 
             // Then do everything else
+            // There is an inconsistency with Verica on Amerish in that the base has zero rotation, so the CC external doors are on almost exactly the same X coordinates, but the game seems to order them the opposite way around (4871.424f = GUID 450, 4871.425f = GUID 451 with the normal assignment rules, reversed on client)
+            // The easiest way around this is to just truncate the coords to 2 decimal places, then the ordering will be correct from the Y and Z coords.
             foreach (var obj in mapObjects.Where(x => entitiesWithGuids.Contains(x.ObjectType, StringComparer.OrdinalIgnoreCase))
-                .OrderBy(x => x.ObjectType).ThenBy(x => x.AbsX).ThenBy(x => x.AbsY).ThenBy(x => x.AbsZ))
+                .OrderBy(x => x.ObjectType).ThenBy(x => Math.Truncate(x.AbsX * 100) / 100).ThenBy(x => Math.Truncate(x.AbsY * 100) / 100).ThenBy(x => Math.Truncate(x.AbsZ * 100) / 100))
             {
                 obj.GUID = currentGUID;
                 currentGUID++;
