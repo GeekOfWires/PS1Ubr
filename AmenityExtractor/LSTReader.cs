@@ -40,7 +40,7 @@ namespace PS1Ubr
                             Pitch = int.Parse(line[9]),
                             Yaw = int.Parse(line[10]),
                             Roll = int.Parse(line[11]),
-                            ObjectName = line.Length >= 13 ? line[12] : null
+                            ObjectName = line.Length >= 13 ? line[12].Replace("\"", string.Empty) : null
                         });
                     }
                 }
@@ -69,7 +69,7 @@ namespace PS1Ubr
                     {
                         peEdits.Add(new Pe_Edit
                         {
-                            ObjectName = line[1],
+                            ObjectName = line[1].Replace("\"", string.Empty),
                             ID = int.Parse(line[2]),
                             RelX = float.Parse(line[3]),
                             RelY = float.Parse(line[4]),
