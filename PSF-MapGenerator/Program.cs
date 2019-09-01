@@ -10,6 +10,22 @@ using Newtonsoft.Json;
 
 namespace PSF_MapGenerator
 {
+    class Map
+    {
+        public string Number { get; }
+        public string Name { get; }
+        public uint Checksum { get; }
+        public string MapScale { get; }
+
+        public Map(string name, string number, uint checksum, string mapScale = null)
+        {
+            Name = name;
+            Number = number;
+            Checksum = checksum;
+            MapScale = mapScale;
+        }
+    }
+
     class Program
     {
         private static string _planetsideModReadyFolder = "D:\\Planetside (Mod ready)\\Planetside";
@@ -22,34 +38,38 @@ namespace PSF_MapGenerator
         // BFR terminals/doors are ignored as top level elements as sanctuaries have them with no associated building. (repair_silo also has this problem, but currently is ignored in the AmenityExtrator project)
         // Force domes have GUIDs but are currently classed as separate entities. The dome is controlled by sending GOAM 44 / 48 / 52 to the building GUID
         private static string[] _blacklistedTypes = {"monolith", "bfr_door", "bfr_terminal", "force_dome_dsp_physics", "force_dome_comm_physics", "force_dome_cryo_physics", "force_dome_tech_physics", "force_dome_amp_physics" };
-        
 
-        private static Dictionary<string, string> maps = new Dictionary<string, string> {
-                                                            { "Solsar", "01"},
-                                                            { "Hossin", "02"},
-                                                            { "Cyssor", "03" },
-                                                            { "Ishundar", "04" },
-                                                            { "Forseral", "05" },
-                                                            { "Ceryshen", "06" },
-                                                            { "Esamir", "07" },
-                                                            { "Oshur Prime", "08" },
-                                                            { "Searhus", "09" },
-                                                            { "Amerish", "10" },
-                                                            { "HOME1 (NEW CONGLOMORATE SANCTUARY)", "11" },
-                                                            { "HOME2 (TERRAN REPUBLIC SANCTUARY)", "12" },
-                                                            { "HOME3 (VANU SOVREIGNTY SANCTUARY)", "13" },
-                                                            { "Nexus", "96" },
-                                                            { "Desolation", "97" },
-                                                            { "Ascension", "98" },
-                                                            { "Extinction", "99" },
+
+        
+        private static List<Map> maps = new List<Map>() {
+                                                            new Map("Solsar", "01", 2094187456),
+                                                            new Map("Hossin", "02", 1113780607),
+                                                            new Map("Cyssor", "03", 1624200906),
+                                                            new Map("Ishundar", "04", 2455050867),
+                                                            new Map("Forseral", "05", 107922342),
+                                                            new Map("Ceryshen", "06", 579139514),
+                                                            new Map("Esamir", "07", 1564014762),
+                                                            new Map("Oshur Prime", "08", 0),
+                                                            new Map("Searhus", "09", 1380643455),
+                                                            new Map("Amerish", "10", 230810349),
+                                                            new Map("HOME1 (NEW CONGLOMORATE SANCTUARY)", "11", 4129515529),
+                                                            new Map("HOME2 (TERRAN REPUBLIC SANCTUARY)", "12", 962888126),
+                                                            new Map("HOME3 (VANU SOVREIGNTY SANCTUARY)", "13", 3904659548),
+                                                            new Map("Nexus", "96", 846603446, mapScale: "MapScale.Dim4096"),
+                                                            new Map("Desolation", "97", 2810790213, mapScale: "MapScale.Dim4096"),
+                                                            new Map("Ascension", "98", 3654267088, mapScale: "MapScale.Dim4096"),
+                                                            new Map("Extinction", "99", 3770866186, mapScale: "MapScale.Dim4096") // possible other checksum: 4113726460
+                                                            //other:
+                                                            //tzshvs tzshnc tzshtr map14 4276645952
+                                                            //tzdrvs tzdrnc tzdrtr map15 3628825458
         };
 
         static void Main(string[] args)
         {
             System.Threading.Tasks.Parallel.ForEach(maps, map =>
             {
-                var mapNumber = map.Value;
-                var mapName = map.Key;
+                var mapNumber = map.Number;
+                var mapName = map.Name;
 
                 var json = File.ReadAllText($"guids_map{mapNumber}.json");
                 var _objList = JsonConvert.DeserializeObject<List<PlanetSideObject>>(json);
@@ -63,6 +83,7 @@ namespace PSF_MapGenerator
                 {
                     writer.WriteLine("package zonemaps");
                     writer.WriteLine("");
+                    if (!string.IsNullOrWhiteSpace(map.MapScale)) { writer.WriteLine("import net.psforever.objects.zones.MapScale"); }
                     writer.WriteLine("import net.psforever.objects.zones.ZoneMap");
                     writer.WriteLine("import net.psforever.objects.GlobalDefinitions._");
                     writer.WriteLine("import net.psforever.objects.LocalProjectile");
@@ -82,6 +103,8 @@ namespace PSF_MapGenerator
                     writer.WriteLine($"object Map{mapNumber} {{");
                     writer.WriteLine($"// {mapName}");
                     writer.WriteLine("val ZoneMap = new ZoneMap(\"map" + mapNumber + "\") { ");
+                    if(!string.IsNullOrWhiteSpace(map.MapScale)) { writer.WriteLine($"Scale = {map.MapScale}"); }
+                    writer.WriteLine($"Checksum = {map.Checksum}L");
 
                     foreach (var obj in _objList.Where(x => x.Owner == null))
                     {
