@@ -12,8 +12,7 @@ namespace PSF_MapGenerator
 {
     class Program
     {
-        private static int _lastTurretGUID = 5000; // This keeps track of the last used turret weapon guid, as they seem to be arbitrarily assigned at 5000+
-        private static List<PlanetSideObject> _objList;
+        private static string _planetsideModReadyFolder = "D:\\Planetside (Mod ready)\\Planetside";
         private static readonly string[] _towerTypes =  { "tower_a", "tower_b", "tower_c" };
         private static readonly string[] _buildingTypes = {"amp_station", "cryo_facility", "comm_station", "comm_station_dsp", "tech_plant"};
         private static readonly string[] _bunkerTypes = {"bunker_gauntlet", "bunker_lg", "bunker_sm"};
@@ -23,9 +22,7 @@ namespace PSF_MapGenerator
         // BFR terminals/doors are ignored as top level elements as sanctuaries have them with no associated building. (repair_silo also has this problem, but currently is ignored in the AmenityExtrator project)
         // Force domes have GUIDs but are currently classed as separate entities. The dome is controlled by sending GOAM 44 / 48 / 52 to the building GUID
         private static string[] _blacklistedTypes = {"monolith", "bfr_door", "bfr_terminal", "force_dome_dsp_physics", "force_dome_comm_physics", "force_dome_cryo_physics", "force_dome_tech_physics", "force_dome_amp_physics" };
-        private static List<int> _usedLockIds = new List<int>(); // List of lock ids already used to ensure no lock is assigned to two doors
-        private static List<int> _usedDoorIds = new List<int>(); // List of door ids already used to ensure no door is assigned two locks (e.g. Akkan CC has two locks on top of each other for one door)
-
+        
 
         private static Dictionary<string, string> maps = new Dictionary<string, string> {
                                                             { "Solsar", "01"},
@@ -49,17 +46,17 @@ namespace PSF_MapGenerator
 
         static void Main(string[] args)
         {
-            foreach (var map in maps)
+            System.Threading.Tasks.Parallel.ForEach(maps, map =>
             {
                 var mapNumber = map.Value;
                 var mapName = map.Key;
 
                 var json = File.ReadAllText($"guids_map{mapNumber}.json");
-                _objList = JsonConvert.DeserializeObject<List<PlanetSideObject>>(json);
+                var _objList = JsonConvert.DeserializeObject<List<PlanetSideObject>>(json);
 
-                _lastTurretGUID = 5000;
-                _usedDoorIds = new List<int>();
-                _usedLockIds = new List<int>();
+                var _lastTurretGUID = 5000; // This keeps track of the last used turret weapon guid, as they seem to be arbitrarily assigned at 5000+
+                var _usedLockIds = new List<int>(); // List of lock ids already used to ensure no lock is assigned to two doors
+                var _usedDoorIds = new List<int>(); // List of door ids already used to ensure no door is assigned two locks (e.g. Akkan CC has two locks on top of each other for one door)
 
                 var file = File.Create($"Map{mapNumber}.scala");
                 using (var writer = new System.IO.StreamWriter(file))
@@ -113,17 +110,17 @@ namespace PSF_MapGenerator
                         {
                             writer.WriteLine($"LocalBuilding({obj.GUID}, {obj.MapID}, FoundationBuilder(Building.Structure(StructureType.{structureType}, Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f))))");
                         }
-                        
 
-                        WriteCaptureConsole(children, writer);
-                        WriteDoorsAndLocks(children, writer);
-                        WriteLockers(children, writer);
-                        WriteTerminalsAndSpawnPads(children, obj, writer);
-                        WriteResourceSilos(children, writer);
-                        WriteSpawnTubes(children, obj, writer);
-                        WriteProximityTerminals(children, writer);
-                        WriteTurrets(children, writer);
-                        WriteImplantTerminals(children, writer);
+
+                        WriteCaptureConsole(_objList, children, writer);
+                        WriteDoorsAndLocks(_objList, ref _usedDoorIds, ref _usedLockIds, children, writer);
+                        WriteLockers(_objList, children, writer);
+                        WriteTerminalsAndSpawnPads(_objList, children, obj, writer);
+                        WriteResourceSilos(_objList, children, writer);
+                        WriteSpawnTubes(_objList, children, obj, writer);
+                        WriteProximityTerminals(_objList, children, writer);
+                        WriteTurrets(_objList, ref _lastTurretGUID, children, writer);
+                        WriteImplantTerminals(_objList, children, writer);
                         writer.WriteLine("}");
                     }
 
@@ -131,13 +128,12 @@ namespace PSF_MapGenerator
                     writer.WriteLine("}");
                     writer.Flush();
                 }
-            }
+            });
 
             Console.WriteLine("Done");
-            Console.ReadKey();
         }
 
-        private static void WriteTurrets(List<PlanetSideObject> children, StreamWriter logWriter)
+        private static void WriteTurrets(List<PlanetSideObject> _objList, ref int _lastTurretGUID, List<PlanetSideObject> children, StreamWriter logWriter)
         {
             foreach (var turret in children.Where(x => x.ObjectType == "manned_turret"))
             {
@@ -147,7 +143,7 @@ namespace PSF_MapGenerator
             }
         }
 
-        private static void WriteImplantTerminals(List<PlanetSideObject> children, StreamWriter logWriter)
+        private static void WriteImplantTerminals(List<PlanetSideObject> _objList, List<PlanetSideObject> children, StreamWriter logWriter)
         {
             var terminalList = children.Where(x => x.ObjectType == "implant_terminal");
 
@@ -168,7 +164,7 @@ namespace PSF_MapGenerator
             }
         }
 
-        private static void WriteProximityTerminals(List<PlanetSideObject> children, StreamWriter logWriter)
+        private static void WriteProximityTerminals(List<PlanetSideObject> _objList, List<PlanetSideObject> children, StreamWriter logWriter)
         {
             var proximityTerminalTypes = new[] { "adv_med_terminal", "repair_silo", "pad_landing_frame", "pad_landing_tower_frame", "medical_terminal" };
 
@@ -200,7 +196,7 @@ namespace PSF_MapGenerator
             }
         }
 
-        private static void WriteSpawnTubes(List<PlanetSideObject> children, PlanetSideObject parent, StreamWriter logWriter)
+        private static void WriteSpawnTubes(List<PlanetSideObject> _objList, List<PlanetSideObject> children, PlanetSideObject parent, StreamWriter logWriter)
         {
             var respawnTubeTypes = new[] {"respawn_tube", "mb_respawn_tube"};
 
@@ -222,7 +218,7 @@ namespace PSF_MapGenerator
             }
         }
 
-        private static void WriteResourceSilos(List<PlanetSideObject> children, StreamWriter logWriter)
+        private static void WriteResourceSilos(List<PlanetSideObject> _objList, List<PlanetSideObject> children, StreamWriter logWriter)
         {
             var silo = children.SingleOrDefault(x => x.ObjectType == "resource_silo");
             if (silo == null) return;
@@ -230,7 +226,7 @@ namespace PSF_MapGenerator
             logWriter.WriteLine($"LocalObject({silo.GUID}, ResourceSilo.Constructor, owning_building_guid = {_objList.Single(x => x.Id == silo.Owner).GUID})");
         }
 
-        private static void WriteTerminalsAndSpawnPads(List<PlanetSideObject> children, PlanetSideObject parent, StreamWriter logWriter)
+        private static void WriteTerminalsAndSpawnPads(List<PlanetSideObject> _objList, List<PlanetSideObject> children, PlanetSideObject parent, StreamWriter logWriter)
         {
             var terminalTypes = new[] { "order_terminal", "spawn_terminal", "cert_terminal", "order_terminal" };
             var terminalTypesWithSpawnPad = new[] { "ground_vehicle_terminal", "air_vehicle_terminal", "vehicle_terminal", "vehicle_terminal_combined", "dropship_vehicle_terminal" };
@@ -288,7 +284,7 @@ namespace PSF_MapGenerator
             return Math.Sqrt(sum);
         }
 
-        private static void WriteLockers(List<PlanetSideObject> children, StreamWriter logWriter)
+        private static void WriteLockers(List<PlanetSideObject> _objList, List<PlanetSideObject> children, StreamWriter logWriter)
         {
             var lockerTypes = new[] { "locker_cryo", "locker_med", "mb_locker" };
 
@@ -298,7 +294,7 @@ namespace PSF_MapGenerator
             }
         }
 
-        private static void WriteDoorsAndLocks(List<PlanetSideObject> children, StreamWriter logWriter)
+        private static void WriteDoorsAndLocks(List<PlanetSideObject> _objList, ref List<int> _usedDoorIds, ref List<int> _usedLockIds, List<PlanetSideObject> children, StreamWriter logWriter)
         {
             var doorTypes = new[] { "gr_door_garage_int", "gr_door_int", "gr_door_med", "spawn_tube_door", "amp_cap_door", "door_dsp", "gr_door_ext", "gr_door_garage_ext", "gr_door_main", "gr_door_mb_ext", "gr_door_mb_int", "gr_door_mb_lrg", "gr_door_mb_obsd", "gr_door_mb_orb", "door_spawn_mb" };
 
@@ -340,11 +336,12 @@ namespace PSF_MapGenerator
             }
 
             // Just in case a lock wasn't linked to a door for some reason we'll print it to the console for further investigation
-            var locksNotUsed = lockList.Where(x => !_usedLockIds.Any(y => y == x.GUID));
+            var _usedLockIdsTemp = _usedLockIds;
+            var locksNotUsed = lockList.Where(x => !_usedLockIdsTemp.Any(y => y == x.GUID));
             if(locksNotUsed.Any()) Console.WriteLine("Found unused locks: " + string.Join(", ", locksNotUsed.Select(x => x.GUID)));
         }
 
-        private static void WriteCaptureConsole(List<PlanetSideObject> children, StreamWriter logWriter)
+        private static void WriteCaptureConsole(List<PlanetSideObject> _objList, List<PlanetSideObject> children, StreamWriter logWriter)
         {
             var captureTerminals = new[] { "capture_terminal", "secondary_capture" };
             var objList = children.Where(x => captureTerminals.Contains(x.ObjectType));
