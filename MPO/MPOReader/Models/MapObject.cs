@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MPOReader
+namespace FileReaders.Models
 {
     public class MapObject
     {

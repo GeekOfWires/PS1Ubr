@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MPOReader\MPOReader.csproj" />
+    <ProjectReference Include="..\MPOReader\FileReaders.csproj" />
   </ItemGroup>
 
 </Project>

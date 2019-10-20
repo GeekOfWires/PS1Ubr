@@ -1,18 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using PS1Ubr;
 using System.Threading.Tasks;
-using System.Xml;
-using System.Xml.Serialization;
-using MPOReader;
 using Newtonsoft.Json;
 using Formatting = Newtonsoft.Json.Formatting;
+using FileReaders;
+using FileReaders.Models;
+using AmenityExtractor.Models;
 
 namespace AmenityExtractor
 {
@@ -82,7 +78,7 @@ namespace AmenityExtractor
                 // Process top level objects from MPO file
 
                 // Read the contents_map mpo file, and the associated objects_map lst file
-                var mpoData = !isCave ? MPOReader.MPOReader.ReadMPOFile(planetsideModReadyFolder, mapNumber) : new List<MapObject>();
+                var mpoData = !isCave ? MPOReader.ReadMPOFile(planetsideModReadyFolder, mapNumber) : new List<MapObject>();
                 foreach (var entry in mpoData)
                 {
                     ProcessTopLevelObject(mapObjects, allObjects, uberDataList, entry, ref id, mapId: mpoData.IndexOf(entry) + 1);

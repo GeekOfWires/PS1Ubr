@@ -1,13 +1,12 @@
 ﻿using FileReaders.Models;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
 namespace FileReaders
 {
-
-    // Reads the contents_map*.lst files to get the associated lst file for each object type
-    static class LSTReader
+    public class ZplReader
     {
         public static List<Pse_link> ReadLSTFile(string basePath, string mapNumber)
         {

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
+﻿using FileReaders;
 
 namespace MPOReader_Console
 {
@@ -11,7 +9,7 @@ namespace MPOReader_Console
             var mapNumber = "04";
 
             // Use an absolute path to the extracted map-resources.pak location or make sure the .mpo and *.lst files are in the bin folder
-            var mpoData = MPOReader.MPOReader.ReadMPOFile($"D:\\Planetside (Mod ready)\\Planetside", mapNumber);
+            var mpoData = MPOReader.ReadMPOFile($"D:\\Planetside (Mod ready)\\Planetside", mapNumber);
         }
     }
 }

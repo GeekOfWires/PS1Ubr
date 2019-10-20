@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FileReaders.Models;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -128,54 +129,5 @@ namespace PS1Ubr
 
             return (peHiddens, peEdits, pseRelativeObjects);
         }
-    }
-
-    public class GroundCover
-    {
-        public string LstType { get; set; }
-        public string ObjectType { get; set; }
-        public int Id { get; set; }
-        public float AbsX { get; set; }
-        public float AbsY { get; set; }
-        public float AbsZ { get; set; }
-        public float ScaleX { get; set; }
-        public float ScaleY { get; set; }
-        public float ScaleZ { get; set; }
-        public int Pitch { get; set; }
-        public int Yaw { get; set; }
-        public int Roll { get; set; }
-        public string ObjectName { get; set; }
-    }
-
-    public class Pe_Hidden
-    {
-        public string InstanceName { get; set; }
-    }
-
-    public class Pe_Edit
-    {
-        public string ObjectName { get; set; }
-        public int ID { get; set; }
-        public float RelX { get; set; }
-        public float RelY { get; set; }
-        public float RelZ { get; set; }
-        public string Unk1 { get; set; }
-        public string Unk2 { get; set; }
-        public string Unk3 { get; set; }
-        public string AdditionalType { get; set; } // For objects such as ad billboards that have an addition type of "inside1/outside/inside2"
-    }
-
-    public class Pse_RelativeObject
-    {
-        public string ObjectName { get; set; }
-        public float RelX { get; set; }
-        public float RelY { get; set; }
-        public float RelZ { get; set; }
-        public float ScaleX { get; set; }
-        public float ScaleY { get; set; }
-        public float ScaleZ { get; set; }
-        public float Pitch { get; set; }
-        public float Yaw { get; set; }
-        public float Roll { get; set; }
     }
 }
