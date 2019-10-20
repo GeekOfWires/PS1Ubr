@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FileReaders.Models;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -10,10 +11,12 @@ namespace PS1Ubr
 {
     public static class LSTReader
     {
-        public static List<GroundCover> ReadGroundCoverLST(string basePath, string mapNumber)
+        public static List<GroundCover> ReadGroundCoverLST(string basePath, string mapNumber, bool isCave)
         {
-            var allLstFiles = Directory.GetFiles(basePath, "*.lst", SearchOption.AllDirectories);
-            var lst = allLstFiles.Single(x => x.EndsWith($"groundcover_map{mapNumber}.lst"));
+            var allLstFiles = Directory.GetFiles(basePath, "*.lst", SearchOption.AllDirectories).Where(x => !x.Contains("expansion1.pak-out")); // Exclude duplicate/old? cave files
+
+            var groundcoverFileName = !isCave ? $"groundcover_map{mapNumber}.lst" : $"groundcover_ugd{mapNumber}.lst";
+            string lst = allLstFiles.Single(x => x.EndsWith(groundcoverFileName));
 
             var groundCover = new List<GroundCover>();
             if (System.IO.File.Exists(lst))
@@ -53,7 +56,7 @@ namespace PS1Ubr
         {
             // First read the base .lst file with the pe_edit lines e.g. amp_station.lst if it exists
             var allLstFiles = Directory.GetFiles(mapResourcesFolder, "*.lst", SearchOption.AllDirectories);
-            var baseLst = allLstFiles.SingleOrDefault(x => x.EndsWith($"{objectType.ToLower()}.lst"));
+            var baseLst = allLstFiles.Where(x => !x.Contains("expansion1.pak-out")).SingleOrDefault(x => x.EndsWith($"{objectType.ToLower()}.lst")); // Exclude duplicate/old? cave files
 
             var peEdits = new List<Pe_Edit>();
             var peHiddens = new List<Pe_Hidden>();
@@ -94,7 +97,7 @@ namespace PS1Ubr
             // Then read the additional .lst file for this type if applicable with the pse_relativeobject lines e.g. amp_station_3.lst
             if (entryLstType != null)
             {
-                var additionalLst = allLstFiles.SingleOrDefault(x => x.EndsWith($"{entryLstType.ToLower()}.lst"));
+                var additionalLst = allLstFiles.Where(x => !x.Contains("expansion1.pak-out")).SingleOrDefault(x => x.EndsWith($"{entryLstType.ToLower()}.lst")); // Exclude duplicate/old? cave files
 
                 if (System.IO.File.Exists(additionalLst))
                 {
@@ -126,54 +129,5 @@ namespace PS1Ubr
 
             return (peHiddens, peEdits, pseRelativeObjects);
         }
-    }
-
-    public class GroundCover
-    {
-        public string LstType { get; set; }
-        public string ObjectType { get; set; }
-        public int Id { get; set; }
-        public float AbsX { get; set; }
-        public float AbsY { get; set; }
-        public float AbsZ { get; set; }
-        public float ScaleX { get; set; }
-        public float ScaleY { get; set; }
-        public float ScaleZ { get; set; }
-        public int Pitch { get; set; }
-        public int Yaw { get; set; }
-        public int Roll { get; set; }
-        public string ObjectName { get; set; }
-    }
-
-    public class Pe_Hidden
-    {
-        public string InstanceName { get; set; }
-    }
-
-    public class Pe_Edit
-    {
-        public string ObjectName { get; set; }
-        public int ID { get; set; }
-        public float RelX { get; set; }
-        public float RelY { get; set; }
-        public float RelZ { get; set; }
-        public string Unk1 { get; set; }
-        public string Unk2 { get; set; }
-        public string Unk3 { get; set; }
-        public string AdditionalType { get; set; } // For objects such as ad billboards that have an addition type of "inside1/outside/inside2"
-    }
-
-    public class Pse_RelativeObject
-    {
-        public string ObjectName { get; set; }
-        public float RelX { get; set; }
-        public float RelY { get; set; }
-        public float RelZ { get; set; }
-        public float ScaleX { get; set; }
-        public float ScaleY { get; set; }
-        public float ScaleZ { get; set; }
-        public float Pitch { get; set; }
-        public float Yaw { get; set; }
-        public float Roll { get; set; }
     }
 }

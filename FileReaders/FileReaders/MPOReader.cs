@@ -1,11 +1,11 @@
-﻿using System;
+﻿using FileReaders.Models;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace MPOReader
+namespace FileReaders
 {
     public static class MPOReader
     {

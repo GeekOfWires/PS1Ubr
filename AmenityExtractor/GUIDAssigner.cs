@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Xml;
-using MPOReader;
 
 namespace AmenityExtractor
 {
@@ -27,7 +24,7 @@ namespace AmenityExtractor
             var objectTypesWithMultipleGuids = new Dictionary<string, int>()
             {
                 { "amp_station", 2 }, { "comm_station", 2 }, {"comm_station_dsp", 2}, {"cryo_facility", 2 }, {"tech_plant", 2}, {"pad_landing_frame", 2},
-                { "pad_landing_tower_frame", 2}, {"repair_silo", 3}
+                { "pad_landing_tower_frame", 2}, {"repair_silo", 3}, {"crystals_vehicle_a", 1}, {"crystals_vehicle_b", 1}
             };
 
             var objectNamesWithMultipleGuids = new Dictionary<string, int>();
@@ -44,25 +41,28 @@ namespace AmenityExtractor
             objectNamesWithMultipleGuids.Add("Hart_Hossin", 24); // NC - 6 repair silos
 
             // First iterate over structures in the correct order
-            foreach (var obj in mapObjects.Where(x => structuresWithGuids.Contains(x.ObjectType, StringComparer.OrdinalIgnoreCase)).OrderBy(x => x.ObjectType).ThenBy(x => x.AbsX).ThenBy(x => x.AbsY).ThenBy(x => x.AbsZ))
+            foreach (var obj in mapObjects.Where(x => !x.ObjectType.Contains("!") && structuresWithGuids.Contains(x.ObjectType, StringComparer.OrdinalIgnoreCase)).OrderBy(x => x.ObjectType).ThenBy(x => x.AbsX).ThenBy(x => x.AbsY).ThenBy(x => x.AbsZ))
             {
                 obj.GUID = currentGUID;
                 currentGUID++;
-                if(objectTypesWithMultipleGuids.ContainsKey(obj.ObjectType)) currentGUID += objectTypesWithMultipleGuids[obj.ObjectType]; // Skip reserved GUIDS
+                if (objectTypesWithMultipleGuids.ContainsKey(obj.ObjectType)) currentGUID += objectTypesWithMultipleGuids[obj.ObjectType]; // Skip reserved GUIDS
                 if (objectNamesWithMultipleGuids.ContainsKey(obj.ObjectName)) currentGUID += objectNamesWithMultipleGuids[obj.ObjectName]; // Skip reserved GUIDS
-
             }
 
             // Then do everything else
             // There is an inconsistency with Verica on Amerish in that the base has zero rotation, so the CC external doors are on almost exactly the same X coordinates, but the game seems to order them the opposite way around (4871.424f = GUID 450, 4871.425f = GUID 451 with the normal assignment rules, reversed on client)
             // The easiest way around this is to just truncate the coords to 2 decimal places, then the ordering will be correct from the Y and Z coords.
             foreach (var obj in mapObjects.Where(x => entitiesWithGuids.Contains(x.ObjectType, StringComparer.OrdinalIgnoreCase))
-                .OrderBy(x => x.ObjectType).ThenBy(x => Math.Truncate(x.AbsX * 100) / 100).ThenBy(x => Math.Truncate(x.AbsY * 100) / 100).ThenBy(x => Math.Truncate(x.AbsZ * 100) / 100))
+                .OrderBy(x => x.ObjectType.Replace("!", "")).ThenBy(x => Math.Truncate(x.AbsX * 100) / 100).ThenBy(x => Math.Truncate(x.AbsY * 100) / 100).ThenBy(x => Math.Truncate(x.AbsZ * 100) / 100))
             {
                 obj.GUID = currentGUID;
                 currentGUID++;
-                if(objectTypesWithMultipleGuids.ContainsKey(obj.ObjectType)) currentGUID += objectTypesWithMultipleGuids[obj.ObjectType]; // Skip reserved GUIDS
+                if (objectTypesWithMultipleGuids.ContainsKey(obj.ObjectType)) currentGUID += objectTypesWithMultipleGuids[obj.ObjectType]; // Skip reserved GUIDS
                 if (objectNamesWithMultipleGuids.ContainsKey(obj.ObjectName)) currentGUID += objectNamesWithMultipleGuids[obj.ObjectName]; // Skip reserved GUIDS
+
+                // ! prefix found in cave groundcover files indicate the object should be classed as an "entity" guid, not a structure guid. Trim it once processed.
+                obj.ObjectType = obj.ObjectType.Replace("!", "");
+                obj.ObjectName = obj.ObjectName.Replace("!", "");
             }
         }
     }

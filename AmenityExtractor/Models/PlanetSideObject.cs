@@ -1,4 +1,4 @@
-﻿namespace AmenityExtractor
+﻿namespace AmenityExtractor.Models
 {
     public class PlanetSideObject
     {

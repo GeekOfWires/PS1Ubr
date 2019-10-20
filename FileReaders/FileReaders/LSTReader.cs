@@ -1,11 +1,9 @@
-﻿using System;
+﻿using FileReaders.Models;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Xml;
 
-namespace MPOReader
+namespace FileReaders
 {
 
     // Reads the contents_map*.lst files to get the associated lst file for each object type
@@ -30,12 +28,5 @@ namespace MPOReader
 
             return pseLinks;
         }
-    }
-
-    public class Pse_link
-    {
-        public string Type => "pse_link";
-        public string ObjectName { get; set; }
-        public string LstFile { get; set; }
     }
 }
