@@ -93,6 +93,7 @@ namespace PSF_MapGenerator
                     writer.WriteLine("import net.psforever.objects.serverobject.locks.IFFLock");
                     writer.WriteLine("import net.psforever.objects.serverobject.mblocker.Locker");
                     writer.WriteLine("import net.psforever.objects.serverobject.pad.VehicleSpawnPad");
+                    writer.WriteLine("import net.psforever.objects.serverobject.painbox.Painbox");
                     writer.WriteLine("import net.psforever.objects.serverobject.structures.{Building, FoundationBuilder, StructureType, WarpGate}");
                     writer.WriteLine("import net.psforever.objects.serverobject.terminals.{CaptureTerminal, ProximityTerminal, Terminal}");
                     writer.WriteLine("import net.psforever.objects.serverobject.tube.SpawnTube");
@@ -131,7 +132,7 @@ namespace PSF_MapGenerator
                         }
                         else
                         {
-                            writer.WriteLine($"LocalBuilding({obj.GUID}, {obj.MapID}, FoundationBuilder(Building.Structure(StructureType.{structureType}, Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f))))");
+                            writer.WriteLine($"LocalBuilding({obj.GUID}, {obj.MapID}, FoundationBuilder(Building.Structure(StructureType.{structureType}, Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f), {obj.ObjectType})))");
                         }
 
 
@@ -144,6 +145,7 @@ namespace PSF_MapGenerator
                         WriteProximityTerminals(_objList, children, writer);
                         WriteTurrets(_objList, ref _lastTurretGUID, children, writer);
                         WriteImplantTerminals(_objList, children, writer);
+                        WritePainboxes(_objList, children, writer);
                         writer.WriteLine("}");
                     }
 
@@ -371,6 +373,17 @@ namespace PSF_MapGenerator
             foreach (var obj in objList)
             {
                 logWriter.WriteLine($"LocalObject({obj.GUID}, CaptureTerminal.Constructor({obj.ObjectType}), owning_building_guid = {_objList.Single(x => x.Id == obj.Owner).GUID})");
+            }
+        }
+
+        private static void WritePainboxes(List<PlanetSideObject> _objList, List<PlanetSideObject> children,
+            StreamWriter logWriter)
+        {
+            var painboxes = new[] { "painbox", "painbox_continuous", "painbox_door_radius", "painbox_door_radius_continuous", "painbox_radius", "painbox_radius_continuous" };
+            var objList = children.Where(x => painboxes.Contains(x.ObjectType));
+            foreach (var obj in objList)
+            {
+                logWriter.WriteLine($"LocalObject({obj.GUID}, Painbox.Constructor(Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f), {obj.ObjectType}), owning_building_guid = {_objList.Single(x => x.Id == obj.Owner).GUID})");
             }
         }
     }
