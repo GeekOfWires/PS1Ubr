@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net.Mime;
-using System.Reflection;
-using AmenityExtractor;
+using AmenityExtractor.Models;
 using Newtonsoft.Json;
 
 namespace PSF_MapGenerator
