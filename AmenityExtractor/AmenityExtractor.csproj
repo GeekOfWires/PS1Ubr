@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MPO\MPOReader\FileReaders.csproj" />
+    <ProjectReference Include="..\FileReaders\FileReaders\FileReaders.csproj" />
     <ProjectReference Include="..\UBR\PS1Ubr\PS1Ubr.csproj" />
   </ItemGroup>
 

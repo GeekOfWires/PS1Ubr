@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net.Mime;
-using System.Reflection;
-using AmenityExtractor;
+using AmenityExtractor.Models;
 using Newtonsoft.Json;
 
 namespace PSF_MapGenerator
@@ -162,7 +159,7 @@ namespace PSF_MapGenerator
         {
             foreach (var turret in children.Where(x => x.ObjectType == "manned_turret"))
             {
-                logWriter.WriteLine($"LocalObject({turret.GUID}, FacilityTurret.Constructor(manned_turret, Vector3({turret.AbsX}f, {turret.AbsY}f, {turret.AbsZ}f)), owning_building_guid = {_objList.Single(x => x.Id == turret.Owner).GUID})");
+                logWriter.WriteLine($"LocalObject({turret.GUID}, FacilityTurret.Constructor(Vector3({turret.AbsX}f, {turret.AbsY}f, {turret.AbsZ}f), manned_turret), owning_building_guid = {_objList.Single(x => x.Id == turret.Owner).GUID})");
                 logWriter.WriteLine($"TurretToWeapon({turret.GUID}, {_lastTurretGUID})");
                 _lastTurretGUID++;
             }
@@ -183,7 +180,7 @@ namespace PSF_MapGenerator
                     }
                 ).OrderBy(x => x.Distance).First(x => x.Distance <= 5).x;
 
-                logWriter.WriteLine($"LocalObject({closestTerminal.GUID}, Terminal.Constructor(implant_terminal_interface), owning_building_guid = {_objList.Single(x => x.Id == closestTerminal.Owner).GUID})");
+                logWriter.WriteLine($"LocalObject({closestTerminal.GUID}, Terminal.Constructor(Vector3({closestTerminal.AbsX}f, {closestTerminal.AbsY}f, {closestTerminal.AbsZ}f), implant_terminal_interface), owning_building_guid = {_objList.Single(x => x.Id == closestTerminal.Owner).GUID})");
 
                 logWriter.WriteLine($"TerminalToInterface({terminalMech.GUID}, {closestTerminal.GUID})");
             }
@@ -195,7 +192,7 @@ namespace PSF_MapGenerator
 
             foreach (var proximityTerminal in children.Where(x => proximityTerminalTypes.Contains(x.ObjectType)))
             {
-                logWriter.WriteLine($"LocalObject({proximityTerminal.GUID}, ProximityTerminal.Constructor({proximityTerminal.ObjectType}, Vector3({proximityTerminal.AbsX}f, {proximityTerminal.AbsY}f, {proximityTerminal.AbsZ}f)), owning_building_guid = {_objList.Single(x => x.Id == proximityTerminal.Owner).GUID})");
+                logWriter.WriteLine($"LocalObject({proximityTerminal.GUID}, ProximityTerminal.Constructor(Vector3({proximityTerminal.AbsX}f, {proximityTerminal.AbsY}f, {proximityTerminal.AbsZ}f), {proximityTerminal.ObjectType}), owning_building_guid = {_objList.Single(x => x.Id == proximityTerminal.Owner).GUID})");
 
                 // Some objects such as repair_silo and pad_landing_frame have special terminal objects (e.g. bfr rearm, ground vehicle repair, ground vehicle rearm) that should follow immediately after, with incrementing GUIDs.
                 // As such, these will be hardcoded for now.
@@ -206,7 +203,7 @@ namespace PSF_MapGenerator
                         //startup.pak-out/game_objects.adb.lst:27236:add_property repair_silo has_aggregate_rearm_terminal true
                         //startup.pak-out/game_objects.adb.lst:27237:add_property repair_silo has_aggregate_recharge_terminal true
 
-                        logWriter.WriteLine($"LocalObject({proximityTerminal.GUID + 1}, Terminal.Constructor(ground_rearm_terminal), owning_building_guid = {_objList.Single(x => x.Id == proximityTerminal.Owner).GUID})");
+                        logWriter.WriteLine($"LocalObject({proximityTerminal.GUID + 1}, Terminal.Constructor(Vector3({proximityTerminal.AbsX}f, {proximityTerminal.AbsY}f, {proximityTerminal.AbsZ}f), ground_rearm_terminal), owning_building_guid = {_objList.Single(x => x.Id == proximityTerminal.Owner).GUID})");
                         break;
                     case "pad_landing_frame":
                     case "pad_landing_tower_frame":
@@ -215,7 +212,7 @@ namespace PSF_MapGenerator
 
                         //startup.pak-out/game_objects.adb.lst:22534:add_property pad_landing_tower_frame has_aggregate_rearm_terminal true
                         //startup.pak-out/game_objects.adb.lst:22535:add_property pad_landing_tower_frame has_aggregate_recharge_terminal true
-                        logWriter.WriteLine($"LocalObject({proximityTerminal.GUID + 1}, Terminal.Constructor(air_rearm_terminal), owning_building_guid = {_objList.Single(x => x.Id == proximityTerminal.Owner).GUID})");
+                        logWriter.WriteLine($"LocalObject({proximityTerminal.GUID + 1}, Terminal.Constructor(Vector3({proximityTerminal.AbsX}f, {proximityTerminal.AbsY}f, {proximityTerminal.AbsZ}f), air_rearm_terminal), owning_building_guid = {_objList.Single(x => x.Id == proximityTerminal.Owner).GUID})");
                         break;
                 }
             }
@@ -239,7 +236,7 @@ namespace PSF_MapGenerator
 
                 logWriter.WriteLine(tubeType == ""
                     ? $"LocalObject({spawnTube.GUID}, SpawnTube.Constructor(Vector3({spawnTube.AbsX}f, {spawnTube.AbsY}f, {spawnTube.AbsZ}f), Vector3(0, 0, {spawnTube.Yaw})), owning_building_guid = {_objList.Single(x => x.Id == spawnTube.Owner).GUID})"
-                    : $"LocalObject({spawnTube.GUID}, SpawnTube.Constructor({tubeType}, Vector3({spawnTube.AbsX}f, {spawnTube.AbsY}f, {spawnTube.AbsZ}f), Vector3(0, 0, {spawnTube.Yaw})), owning_building_guid = {_objList.Single(x => x.Id == spawnTube.Owner).GUID})");
+                    : $"LocalObject({spawnTube.GUID}, SpawnTube.Constructor(Vector3({spawnTube.AbsX}f, {spawnTube.AbsY}f, {spawnTube.AbsZ}f), {tubeType}, Vector3(0, 0, {spawnTube.Yaw})), owning_building_guid = {_objList.Single(x => x.Id == spawnTube.Owner).GUID})");
             }
         }
 
@@ -281,7 +278,7 @@ namespace PSF_MapGenerator
                 // The scala codebase also uses ground_vehicle_terminal as the object type instead of vehicle_terminal, so we'll map to that for now.
                 if(terminal.ObjectType == "vehicle_terminal") { terminal.ObjectType = "ground_vehicle_terminal"; }
 
-                logWriter.WriteLine($"LocalObject({terminal.GUID}, Terminal.Constructor({terminal.ObjectType}), owning_building_guid = {_objList.Single(x => x.Id == terminal.Owner).GUID})");
+                logWriter.WriteLine($"LocalObject({terminal.GUID}, Terminal.Constructor(Vector3({terminal.AbsX}f, {terminal.AbsY}f, {terminal.AbsZ}f), {terminal.ObjectType}), owning_building_guid = {_objList.Single(x => x.Id == terminal.Owner).GUID})");
 
                 if (terminalTypesWithSpawnPad.Contains(terminal.ObjectType))
                 {
@@ -298,7 +295,7 @@ namespace PSF_MapGenerator
                     // On top of that, some spawn pads also have an additional rotation (vehiclecreationzorientoffset) when spawning vehicles set in game_objects.adb.lst - this should be handled on the Scala side
                     var adjustedYaw = closestSpawnPad.Yaw - 90;
 
-                    logWriter.WriteLine($"LocalObject({closestSpawnPad.GUID}, VehicleSpawnPad.Constructor({closestSpawnPad.ObjectType}, Vector3({closestSpawnPad.AbsX}f, {closestSpawnPad.AbsY}f, {closestSpawnPad.AbsZ}f), Vector3(0, 0,{adjustedYaw})), owning_building_guid = {_objList.Single(x => x.Id == closestSpawnPad.Owner).GUID}, terminal_guid = {terminal.GUID})");
+                    logWriter.WriteLine($"LocalObject({closestSpawnPad.GUID}, VehicleSpawnPad.Constructor(Vector3({closestSpawnPad.AbsX}f, {closestSpawnPad.AbsY}f, {closestSpawnPad.AbsZ}f), {closestSpawnPad.ObjectType}, Vector3(0, 0,{adjustedYaw})), owning_building_guid = {_objList.Single(x => x.Id == closestSpawnPad.Owner).GUID}, terminal_guid = {terminal.GUID})");
                 }
             }
         }
