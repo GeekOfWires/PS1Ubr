@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using AmenityExtractor.Models;
+using FileReaders;
 using Newtonsoft.Json;
 
 namespace PSF_MapGenerator
@@ -36,8 +37,7 @@ namespace PSF_MapGenerator
         // Force domes have GUIDs but are currently classed as separate entities. The dome is controlled by sending GOAM 44 / 48 / 52 to the building GUID
         private static string[] _blacklistedTypes = {"monolith", "bfr_door", "bfr_terminal", "force_dome_dsp_physics", "force_dome_comm_physics", "force_dome_cryo_physics", "force_dome_tech_physics", "force_dome_amp_physics" };
 
-
-        
+        private static GameObjectsReader objReader = new GameObjectsReader(_planetsideModReadyFolder);
         private static List<Map> maps = new List<Map>() {
                                                             new Map("Solsar", "01", 2094187456),
                                                             new Map("Hossin", "02", 1113780607),
@@ -124,12 +124,12 @@ namespace PSF_MapGenerator
                         if (_warpGateTypes.Contains(obj.ObjectType.ToLower()))
                         {
                             writer.WriteLine(obj.ObjectType.ToLower() == "hst"
-                                ? $"LocalBuilding({obj.GUID}, {obj.MapID}, FoundationBuilder(WarpGate.Structure(Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f), hst)))"
-                                : $"LocalBuilding({obj.GUID}, {obj.MapID}, FoundationBuilder(WarpGate.Structure(Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f))))");
+                                ? $"LocalBuilding(\"{obj.ObjectName}\", {obj.GUID}, {obj.MapID}, FoundationBuilder(WarpGate.Structure(Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f), hst)))"
+                                : $"LocalBuilding(\"{obj.ObjectName}\", {obj.GUID}, {obj.MapID}, FoundationBuilder(WarpGate.Structure(Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f))))");
                         }
                         else
                         {
-                            writer.WriteLine($"LocalBuilding({obj.GUID}, {obj.MapID}, FoundationBuilder(Building.Structure(StructureType.{structureType}, Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f), {obj.ObjectType})))");
+                            writer.WriteLine($"LocalBuilding(\"{obj.ObjectName}\", {obj.GUID}, {obj.MapID}, FoundationBuilder(Building.Structure(StructureType.{structureType}, Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f))))");
                         }
 
 
@@ -146,6 +146,8 @@ namespace PSF_MapGenerator
                         writer.WriteLine("}");
                     }
 
+                    WriteLatticeLinks(mapNumber, writer);
+
                     writer.WriteLine("}");
                     writer.WriteLine("}");
                     writer.Flush();
@@ -153,6 +155,21 @@ namespace PSF_MapGenerator
             });
 
             Console.WriteLine("Done");
+        }
+
+        private static void WriteLatticeLinks(string mapNumber, StreamWriter writer)
+        {
+            var links = objReader.GetByObjectName($"map{mapNumber}").Where(x => x[2].StartsWith("building_link_"));
+
+            writer.WriteLine("def Lattice() : Unit = {");
+
+            foreach (var link in links)
+            {
+                writer.WriteLine($"LatticeLink(\"{link[3]}\", \"{link[4]}\")");
+            }
+
+            writer.WriteLine("}");
+            writer.WriteLine("Lattice()");
         }
 
         private static void WriteTurrets(List<PlanetSideObject> _objList, ref int _lastTurretGUID, List<PlanetSideObject> children, StreamWriter logWriter)
