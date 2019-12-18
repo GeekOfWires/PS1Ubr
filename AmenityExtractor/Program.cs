@@ -27,7 +27,7 @@ namespace AmenityExtractor
         }
 
         // Path to the mod ready planetside folder that has everything pre-extracted from the pak files.
-        private static string planetsideModReadyFolder = "D:\\Planetside (Mod ready)\\Planetside";
+        private static string planetsideModReadyFolder = "C:\\Planetside (Mod ready)\\Planetside";
 
         static void Main(string[] args)
         {
