@@ -26,7 +26,7 @@ namespace PSF_MapGenerator
 
     class Program
     {
-        private static string _planetsideModReadyFolder = "D:\\Planetside (Mod ready)\\Planetside";
+        private static string _planetsideModReadyFolder = "C:\\Planetside (Mod ready)\\Planetside";
         private static readonly string[] _towerTypes =  { "tower_a", "tower_b", "tower_c" };
         private static readonly string[] _buildingTypes = {"amp_station", "cryo_facility", "comm_station", "comm_station_dsp", "tech_plant"};
         private static readonly string[] _bunkerTypes = {"bunker_gauntlet", "bunker_lg", "bunker_sm"};
@@ -129,7 +129,7 @@ namespace PSF_MapGenerator
                         }
                         else
                         {
-                            writer.WriteLine($"LocalBuilding(\"{obj.ObjectName}\", {obj.GUID}, {obj.MapID}, FoundationBuilder(Building.Structure(StructureType.{structureType}, Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f))))");
+                            writer.WriteLine($"LocalBuilding(\"{obj.ObjectName}\", {obj.GUID}, {obj.MapID}, FoundationBuilder(Building.Structure(StructureType.{structureType}, Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f), {obj.ObjectType})))");
                         }
 
 
