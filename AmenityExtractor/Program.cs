@@ -58,7 +58,7 @@ namespace AmenityExtractor
                                                             ( "Annwn", "05", true ),
                                                             ( "Drugaskan", "06", true )
             };
-            
+
             // Load all *.ubr files
             var uberDataList = new List<CUberData>();
             Parallel.ForEach(Directory.GetFiles(planetsideModReadyFolder, "*.ubr", SearchOption.AllDirectories),
@@ -93,36 +93,69 @@ namespace AmenityExtractor
                 // Load objects like monoliths / geowarps / warpgate_small from the map groundcover file
                 foreach (var line in groundCoverData.Where(x => allObjectsWithGuids.Contains(x.ObjectType)))
                 {
-                    var entry = new PlanetSideObject
+                   string[] cavernBuildingTypes = { "ceiling_bldg_a", "ceiling_bldg_b", "ceiling_bldg_c", "ceiling_bldg_d", "ceiling_bldg_e", "ceiling_bldg_f",
+                                                                    "ceiling_bldg_g", "ceiling_bldg_h", "ceiling_bldg_i", "ceiling_bldg_j", "ceiling_bldg_z",
+                                                                    "ground_bldg_a", "ground_bldg_b", "ground_bldg_c", "ground_bldg_d", "ground_bldg_e", "ground_bldg_f",
+                                                                    "ground_bldg_g", "ground_bldg_h", "ground_bldg_i", "ground_bldg_j", "ground_bldg_z",
+                                                                    "redoubt", "vanu_control_point", "vanu_core", "vanu_vehicle_station" };
+
+                    int parentId = id;
+                    PlanetSideObject parent = null;
+
+                    // For cave structures treat them as top level objects
+                    if(cavernBuildingTypes.Contains(line.ObjectType.ToLower()))
                     {
-                        Id = id,
-                        ObjectName = string.IsNullOrWhiteSpace(line.ObjectName) ? line.ObjectType : line.ObjectName,
-                        ObjectType = line.ObjectType,
-                        AbsX = line.AbsX,
-                        AbsY = line.AbsY,
-                        AbsZ = line.AbsZ,
-                        MapID = line.Id
-                    };
-                    mapObjects.Add(entry);
-                    id++;
-
-                    // If the groundcover object has a .lst file load and process that too (for example facilities within caves are defined in the groundcover file, and contain painboxes in the .lst file)
-                    List<Pe_Edit> peEdits = new List<Pe_Edit>();
-                    List<Pse_RelativeObject> pseRelativeObjects = new List<Pse_RelativeObject>();
-                    List<Pe_Hidden> peHiddens = new List<Pe_Hidden>();
-                    (peHiddens, peEdits, pseRelativeObjects) = LSTReader.ReadLSTFile(planetsideModReadyFolder, line.ObjectType, null);
-
-                    var rotationDegrees = MathFunctions.PS1RotationToDegrees(line.Roll);
-                    var parentRotationRadians = MathFunctions.DegreesToRadians(rotationDegrees);
-
-                    if (peEdits.Any())
-                    {
-                        ProcessLSTPeEdits(peEdits, allObjects, mapObjects, parentRotationRadians, baseX: entry.AbsX, baseY: entry.AbsY, baseZ: entry.AbsZ, ownerId: entry.Id, id: ref id);
+                        ProcessTopLevelObject(mapObjects,
+                        allObjects,
+                        uberDataList,
+                        new MapObject()
+                        {
+                            ObjectType = line.ObjectType,
+                            ObjectName = line.ObjectName ?? line.ObjectType + "_" + line.Id,
+                            HorizontalPosition = line.AbsX,
+                            VerticalPosition = line.AbsY,
+                            HeightPosition = line.AbsZ,
+                            HorizontalRotation = line.Roll,
+                            LstType = line.LstType
+                        },
+                        ref id,
+                        mapId: line.Id);
                     }
-
-                    if (pseRelativeObjects.Any())
+                    else
                     {
-                        ProcessLSTPseRelativeObjects(pseRelativeObjects, allObjects, mapObjects, uberDataList, parentRotationRadians, baseZ: entry.AbsZ, ownerId: entry.Id, id: ref id);
+                        var entry = new PlanetSideObject
+                        {
+                            Id = id,
+                            ObjectName = string.IsNullOrWhiteSpace(line.ObjectName) ? line.ObjectType : line.ObjectName,
+                            ObjectType = line.ObjectType,
+                            AbsX = line.AbsX,
+                            AbsY = line.AbsY,
+                            AbsZ = line.AbsZ,
+                            MapID = line.Id
+                        };
+                        mapObjects.Add(entry);
+                        id++;
+
+                        parent = mapObjects.Single(x => x.Id == parentId);
+
+                        // If the groundcover object has a .lst file load and process that too (for example facilities within caves are defined in the groundcover file, and contain painboxes in the .lst file)
+                        List<Pe_Edit> peEdits = new List<Pe_Edit>();
+                        List<Pse_RelativeObject> pseRelativeObjects = new List<Pse_RelativeObject>();
+                        List<Pe_Hidden> peHiddens = new List<Pe_Hidden>();
+                        (peHiddens, peEdits, pseRelativeObjects) = LSTReader.ReadLSTFile(planetsideModReadyFolder, line.ObjectType, null);
+
+                        var rotationDegrees = MathFunctions.PS1RotationToDegrees(line.Roll);
+                        var parentRotationRadians = MathFunctions.DegreesToRadians(rotationDegrees);
+
+                        if (peEdits.Any())
+                        {
+                            ProcessLSTPeEdits(peEdits, allObjects, mapObjects, parentRotationRadians, baseX: parent.AbsX, baseY: parent.AbsY, baseZ: parent.AbsZ, ownerId: parent.Id, id: ref id);
+                        }
+
+                        if (pseRelativeObjects.Any())
+                        {
+                            ProcessLSTPseRelativeObjects(pseRelativeObjects, allObjects, mapObjects, uberDataList, parentRotationRadians, baseZ: parent.AbsZ, ownerId: parent.Id, id: ref id);
+                        }
                     }
                 }
 
