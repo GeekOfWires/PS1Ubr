@@ -68,13 +68,13 @@ namespace PSF_MapGenerator
                                                             new Map("Nexus", "96", 846603446, mapScale: "MapScale.Dim4096"),
                                                             new Map("Desolation", "97", 2810790213, mapScale: "MapScale.Dim4096"),
                                                             new Map("Ascension", "98", 3654267088, mapScale: "MapScale.Dim4096"),
-                                                            new Map("Extinction", "99", 3770866186, mapScale: "MapScale.Dim4096"), // possible other checksum: 4113726460
-                                                            new Map("Supai", "01", 0, mapScale: "MapScale.Dim2560", isCave: true),
-                                                            new Map("Hunhau", "02", 0, mapScale: "MapScale.Dim2560", isCave: true),
-                                                            new Map("Adlivun", "03", 0, mapScale: "MapScale.Dim2048", isCave: true),
-                                                            new Map("Byblos", "04", 0, mapScale: "MapScale.Dim2048", isCave: true),
-                                                            new Map("Annwn", "05", 0, mapScale: "MapScale.Dim2048", isCave: true),
-                                                            new Map("Drugaskan", "06", 0, mapScale: "MapScale.Dim2560", isCave: true),
+                                                            new Map("Extinction", "99", 4113726460, mapScale: "MapScale.Dim4096"), // possible other checksum: 3770866186
+                                                            new Map("Supai", "01", 3405929729, mapScale: "MapScale.Dim2560", isCave: true), // Map checksum for caves is at memory address 004A8131 EAX, special thanks to Chord
+                                                            new Map("Hunhau", "02", 2702486449, mapScale: "MapScale.Dim2560", isCave: true),
+                                                            new Map("Adlivun", "03", 1673539651, mapScale: "MapScale.Dim2048", isCave: true),
+                                                            new Map("Byblos", "04", 3797992164, mapScale: "MapScale.Dim2048", isCave: true),
+                                                            new Map("Annwn", "05", 1769572498, mapScale: "MapScale.Dim2048", isCave: true),
+                                                            new Map("Drugaskan", "06", 4274683970, mapScale: "MapScale.Dim2560", isCave: true),
                                                             //other:
                                                             //tzshvs tzshnc tzshtr map14 4276645952
                                                             //tzdrvs tzdrnc tzdrtr map15 3628825458
