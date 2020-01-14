@@ -143,6 +143,7 @@ namespace PSF_MapGenerator
                         WriteTurrets(_objList, ref _lastTurretGUID, children, writer);
                         WriteImplantTerminals(_objList, children, writer);
                         WritePainboxes(_objList, children, writer);
+                        WriteGeneratorsAndTerminals(_objList, children, writer);
                         writer.WriteLine("}");
                     }
 
@@ -155,6 +156,19 @@ namespace PSF_MapGenerator
             });
 
             Console.WriteLine("Done");
+        }
+
+        private static void WriteGeneratorsAndTerminals(List<PlanetSideObject> _objList, List<PlanetSideObject> children, StreamWriter logWriter)
+        {
+            var generator = children.SingleOrDefault(x => x.ObjectType == "generator");
+            if (generator == null) return;
+
+            logWriter.WriteLine($"LocalObject({generator.GUID}, Generator.Constructor, owning_building_guid = {_objList.Single(x => x.Id == generator.Owner).GUID})");
+
+            var terminal = children.SingleOrDefault(x => x.ObjectType == "gen_control");
+            if (terminal == null) return;
+
+            logWriter.WriteLine($"LocalObject({terminal.GUID}, Terminal.Constructor(Vector3({terminal.AbsX}f, {terminal.AbsY}f, {terminal.AbsZ}f), gen_control, owning_building_guid = {_objList.Single(x => x.Id == terminal.Owner).GUID})");
         }
 
         private static void WriteLatticeLinks(string mapNumber, StreamWriter writer)
