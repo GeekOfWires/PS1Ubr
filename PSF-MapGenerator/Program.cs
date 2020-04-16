@@ -250,9 +250,9 @@ namespace PSF_MapGenerator
 
         private static void WriteTurrets(List<PlanetSideObject> _objList, ref int _lastTurretGUID, List<PlanetSideObject> children, StreamWriter logWriter)
         {
-            foreach (var turret in children.Where(x => x.ObjectType == "manned_turret"))
+            foreach (var turret in children.Where(x => x.ObjectType == "manned_turret" || x.ObjectType == "vanu_sentry_turret"))
             {
-                logWriter.WriteLine($"LocalObject({turret.GUID}, FacilityTurret.Constructor(Vector3({turret.AbsX}f, {turret.AbsY}f, {turret.AbsZ}f), manned_turret), owning_building_guid = {_objList.Single(x => x.Id == turret.Owner).GUID})");
+                logWriter.WriteLine($"LocalObject({turret.GUID}, FacilityTurret.Constructor(Vector3({turret.AbsX}f, {turret.AbsY}f, {turret.AbsZ}f), {turret.ObjectType}), owning_building_guid = {_objList.SingleOrDefault(x => x.Id == turret.Owner)?.GUID ?? 0})");
                 logWriter.WriteLine($"TurretToWeapon({turret.GUID}, {_lastTurretGUID})");
                 _lastTurretGUID++;
             }
