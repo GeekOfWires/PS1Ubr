@@ -107,6 +107,7 @@ namespace PSF_MapGenerator
                     writer.WriteLine("import net.psforever.objects.LocalProjectile");
                     writer.WriteLine("import net.psforever.objects.ballistics.Projectile");
                     writer.WriteLine("import net.psforever.objects.serverobject.doors.Door");
+                    writer.WriteLine("import net.psforever.objects.serverobject.generator.Generator");
                     writer.WriteLine("import net.psforever.objects.serverobject.implantmech.ImplantTerminalMech");
                     writer.WriteLine("import net.psforever.objects.serverobject.locks.IFFLock");
                     writer.WriteLine("import net.psforever.objects.serverobject.mblocker.Locker");
@@ -238,12 +239,12 @@ namespace PSF_MapGenerator
             var generator = children.SingleOrDefault(x => x.ObjectType == "generator");
             if (generator == null) return;
 
-            logWriter.WriteLine($"LocalObject({generator.GUID}, Generator.Constructor, owning_building_guid = {_objList.Single(x => x.Id == generator.Owner).GUID})");
+            logWriter.WriteLine($"LocalObject({generator.GUID}, Generator.Constructor(Vector3({generator.AbsX}f, {generator.AbsY}f, {generator.AbsZ}f)), owning_building_guid = {_objList.Single(x => x.Id == generator.Owner).GUID})");
 
             var terminal = children.SingleOrDefault(x => x.ObjectType == "gen_control");
             if (terminal == null) return;
 
-            logWriter.WriteLine($"LocalObject({terminal.GUID}, Terminal.Constructor(Vector3({terminal.AbsX}f, {terminal.AbsY}f, {terminal.AbsZ}f), gen_control, owning_building_guid = {_objList.Single(x => x.Id == terminal.Owner).GUID})");
+            logWriter.WriteLine($"LocalObject({terminal.GUID}, Terminal.Constructor(Vector3({terminal.AbsX}f, {terminal.AbsY}f, {terminal.AbsZ}f), gen_control), owning_building_guid = {_objList.Single(x => x.Id == terminal.Owner).GUID})");
         }
 
         private static void WriteLatticeLinks(Map map, StreamWriter writer)
