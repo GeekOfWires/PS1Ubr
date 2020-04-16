@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace FileReaders
 {
-    public class ZplReader
+    public static class ZplReader
     {
         public static List<Zipline> ReadZplFile(string basePath, string mapNumber)
         {
@@ -23,7 +23,7 @@ namespace FileReaders
                 if (line[0] == "zip_begin_path")
                 {
                     current = new Zipline();
-                    current.Id = ziplines.Count() + 1;
+                    current.PathId = ziplines.Count() + 1;
                 }
 
                 if (line[0] == "zip_is_teleporter" && line[1] == "true")

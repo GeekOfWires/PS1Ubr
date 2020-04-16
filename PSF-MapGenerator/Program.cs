@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using AmenityExtractor.Models;
 using FileReaders;
+using FileReaders.Models;
 using Newtonsoft.Json;
 
 namespace PSF_MapGenerator
@@ -14,13 +15,17 @@ namespace PSF_MapGenerator
         public string Name { get; }
         public uint Checksum { get; }
         public string MapScale { get; }
+        public bool IsCave { get; }
 
-        public Map(string name, string number, uint checksum, string mapScale = null)
+        public string FilePrefix => IsCave ? "Ugd" : "Map";
+
+        public Map(string name, string number, uint checksum, string mapScale = null, bool isCave = false)
         {
             Name = name;
             Number = number;
             Checksum = checksum;
             MapScale = mapScale;
+            IsCave = isCave;
         }
     }
 
@@ -30,7 +35,15 @@ namespace PSF_MapGenerator
         private static readonly string[] _towerTypes =  { "tower_a", "tower_b", "tower_c" };
         private static readonly string[] _buildingTypes = {"amp_station", "cryo_facility", "comm_station", "comm_station_dsp", "tech_plant"};
         private static readonly string[] _bunkerTypes = {"bunker_gauntlet", "bunker_lg", "bunker_sm"};
-        private static readonly string[] _warpGateTypes = {"hst", "warpgate", "warpgate_small"};
+        private static readonly string[] _warpGateTypes = {"hst", "warpgate", "warpgate_small", "warpgate_cavern"};
+        private static readonly string[] _otherBuildingTypes = { "orbital_building_vs", "orbital_building_tr", "orbital_building_nc",
+                                                                "vt_building_vs", "vt_building_tr", "vt_building_nc",
+                                                                "vt_dropship", "vt_spawn", "vt_vehicle" };
+        private static readonly string[] _cavernBuildingTypes = { "ceiling_bldg_a", "ceiling_bldg_b", "ceiling_bldg_c", "ceiling_bldg_d", "ceiling_bldg_e", "ceiling_bldg_f",
+                                                                    "ceiling_bldg_g", "ceiling_bldg_h", "ceiling_bldg_i", "ceiling_bldg_j", "ceiling_bldg_z",
+                                                                    "ground_bldg_a", "ground_bldg_b", "ground_bldg_c", "ground_bldg_d", "ground_bldg_e", "ground_bldg_f",
+                                                                    "ground_bldg_g", "ground_bldg_h", "ground_bldg_i", "ground_bldg_j", "ground_bldg_z",
+                                                                    "redoubt", "vanu_control_point", "vanu_core", "vanu_vehicle_station" };
 
         // monolith, hst, warpgate are ignored for now as the scala code isn't ready to handle them.
         // BFR terminals/doors are ignored as top level elements as sanctuaries have them with no associated building. (repair_silo also has this problem, but currently is ignored in the AmenityExtrator project)
@@ -55,7 +68,13 @@ namespace PSF_MapGenerator
                                                             new Map("Nexus", "96", 846603446, mapScale: "MapScale.Dim4096"),
                                                             new Map("Desolation", "97", 2810790213, mapScale: "MapScale.Dim4096"),
                                                             new Map("Ascension", "98", 3654267088, mapScale: "MapScale.Dim4096"),
-                                                            new Map("Extinction", "99", 3770866186, mapScale: "MapScale.Dim4096") // possible other checksum: 4113726460
+                                                            new Map("Extinction", "99", 4113726460, mapScale: "MapScale.Dim4096"), // possible other checksum: 3770866186
+                                                            new Map("Supai", "01", 3405929729, mapScale: "MapScale.Dim2560", isCave: true), // Map checksum for caves is at memory address 004A8131 EAX, special thanks to Chord
+                                                            new Map("Hunhau", "02", 2702486449, mapScale: "MapScale.Dim2560", isCave: true),
+                                                            new Map("Adlivun", "03", 1673539651, mapScale: "MapScale.Dim2048", isCave: true),
+                                                            new Map("Byblos", "04", 3797992164, mapScale: "MapScale.Dim2048", isCave: true),
+                                                            new Map("Annwn", "05", 1769572498, mapScale: "MapScale.Dim2048", isCave: true),
+                                                            new Map("Drugaskan", "06", 4274683970, mapScale: "MapScale.Dim2560", isCave: true),
                                                             //other:
                                                             //tzshvs tzshnc tzshtr map14 4276645952
                                                             //tzdrvs tzdrnc tzdrtr map15 3628825458
@@ -68,15 +87,17 @@ namespace PSF_MapGenerator
                 var mapNumber = map.Number;
                 var mapName = map.Name;
 
-                var json = File.ReadAllText($"guids_map{mapNumber}.json");
+                var zplData = map.IsCave ? ZplReader.ReadZplFile(_planetsideModReadyFolder, mapNumber) : new List<Zipline>();
+
+                var json = File.ReadAllText($"guids_{map.FilePrefix.ToLower()}{mapNumber}.json");
                 var _objList = JsonConvert.DeserializeObject<List<PlanetSideObject>>(json);
 
                 var _lastTurretGUID = 5000; // This keeps track of the last used turret weapon guid, as they seem to be arbitrarily assigned at 5000+
                 var _usedLockIds = new List<int>(); // List of lock ids already used to ensure no lock is assigned to two doors
                 var _usedDoorIds = new List<int>(); // List of door ids already used to ensure no door is assigned two locks (e.g. Akkan CC has two locks on top of each other for one door)
 
-                var file = File.Create($"Map{mapNumber}.scala");
-                using (var writer = new System.IO.StreamWriter(file))
+                var file = File.Create($"{map.FilePrefix}{mapNumber}.scala");
+                using (var writer = new StreamWriter(file))
                 {
                     writer.WriteLine("package zonemaps");
                     writer.WriteLine("");
@@ -97,57 +118,90 @@ namespace PSF_MapGenerator
                     writer.WriteLine("import net.psforever.objects.serverobject.resourcesilo.ResourceSilo");
                     writer.WriteLine("import net.psforever.objects.serverobject.turret.FacilityTurret");
                     writer.WriteLine("import net.psforever.types.Vector3");
+                    writer.WriteLine("import import net.psforever.objects.serverobject.zipline.ZipLinePath");
                     writer.WriteLine("");
-                    writer.WriteLine($"object Map{mapNumber} {{");
-                    writer.WriteLine($"// {mapName}");
-                    writer.WriteLine("val ZoneMap = new ZoneMap(\"map" + mapNumber + "\") { ");
+                    writer.WriteLine($"object {map.FilePrefix}{mapNumber} {{ // {mapName}");
+                    writer.WriteLine($"val ZoneMap = new ZoneMap(\"{map.FilePrefix.ToLower()}{mapNumber}\") {{");
                     if(!string.IsNullOrWhiteSpace(map.MapScale)) { writer.WriteLine($"Scale = {map.MapScale}"); }
                     writer.WriteLine($"Checksum = {map.Checksum}L");
 
-                    foreach (var obj in _objList.Where(x => x.Owner == null))
+                    var processed = new List<PlanetSideObject>();
+                    foreach (var obj in _objList.Where(x => x.Owner == null && !_blacklistedTypes.Contains(x.ObjectType)))
                     {
-                        if (_blacklistedTypes.Contains(obj.ObjectType)) continue; // skip blacklisted types
-
                         var children = _objList.Where(x => x.Owner == obj.Id).ToList();
 
                         var structureType = "Building";
-                        if (_towerTypes.Contains(obj.ObjectType)) structureType = "Tower";
-                        if (_buildingTypes.Contains(obj.ObjectType)) structureType = "Facility";
-                        if (_bunkerTypes.Contains(obj.ObjectType)) structureType = "Bunker";
+
+                        // For some reason when spawning at a Redoubt building the client requests a spawn type of Tower, likely to allow the choice of spawning at both Redoubt and Module buildings
+                        if (_towerTypes.Contains(obj.ObjectType.ToLower()) || obj.ObjectType.ToLower() == "redoubt") structureType = "Tower";
+                        if (_buildingTypes.Contains(obj.ObjectType.ToLower())) structureType = "Facility";
+                        if (_bunkerTypes.Contains(obj.ObjectType.ToLower())) structureType = "Bunker";
                         //todo: Platform types
 
-
-                        writer.WriteLine("");
-                        writer.WriteLine($"Building{obj.MapID}()");
-                        writer.WriteLine($"def Building{obj.MapID}() : Unit = {{ // Name: {obj.ObjectName} Type: {obj.ObjectType} GUID: {obj.GUID}, MapID: {obj.MapID}");
-
-                        if (_warpGateTypes.Contains(obj.ObjectType.ToLower()))
+                        if(_towerTypes.Contains(obj.ObjectType.ToLower())
+                            || _buildingTypes.Contains(obj.ObjectType.ToLower())
+                            || _bunkerTypes.Contains(obj.ObjectType.ToLower())
+                            || _warpGateTypes.Contains(obj.ObjectType.ToLower())
+                            || _otherBuildingTypes.Contains(obj.ObjectType.ToLower())
+                            || _cavernBuildingTypes.Contains(obj.ObjectType.ToLower())
+                          )
                         {
-                            writer.WriteLine(obj.ObjectType.ToLower() == "hst"
-                                ? $"LocalBuilding(\"{obj.ObjectName}\", {obj.GUID}, {obj.MapID}, FoundationBuilder(WarpGate.Structure(Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f), hst)))"
-                                : $"LocalBuilding(\"{obj.ObjectName}\", {obj.GUID}, {obj.MapID}, FoundationBuilder(WarpGate.Structure(Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f))))");
-                        }
-                        else
-                        {
-                            writer.WriteLine($"LocalBuilding(\"{obj.ObjectName}\", {obj.GUID}, {obj.MapID}, FoundationBuilder(Building.Structure(StructureType.{structureType}, Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f), {obj.ObjectType})))");
-                        }
+                            writer.WriteLine("");
+                            writer.WriteLine($"Building{obj.MapID}()");
+                            writer.WriteLine($"def Building{obj.MapID}() : Unit = {{ // Name: {obj.ObjectName} Type: {obj.ObjectType} GUID: {obj.GUID}, MapID: {obj.MapID}");
 
+                            if (_warpGateTypes.Contains(obj.ObjectType.ToLower()))
+                            {
+                                writer.WriteLine(obj.ObjectType.ToLower() == "hst"
+                                    ? $"LocalBuilding(\"{obj.ObjectName}\", {obj.GUID}, {obj.MapID}, FoundationBuilder(WarpGate.Structure(Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f), hst)))"
+                                    : $"LocalBuilding(\"{obj.ObjectName}\", {obj.GUID}, {obj.MapID}, FoundationBuilder(WarpGate.Structure(Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f))))");
+                            }
+                            else
+                            {
+                                writer.WriteLine($"LocalBuilding(\"{obj.ObjectName}\", {obj.GUID}, {obj.MapID}, FoundationBuilder(Building.Structure(StructureType.{structureType}, Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f), {obj.ObjectType})))");
+                            }
 
-                        WriteCaptureConsole(_objList, children, writer);
-                        WriteDoorsAndLocks(_objList, ref _usedDoorIds, ref _usedLockIds, children, writer);
-                        WriteLockers(_objList, children, writer);
-                        WriteTerminalsAndSpawnPads(_objList, children, obj, writer);
-                        WriteResourceSilos(_objList, children, writer);
-                        WriteSpawnTubes(_objList, children, obj, writer);
-                        WriteProximityTerminals(_objList, children, writer);
-                        WriteTurrets(_objList, ref _lastTurretGUID, children, writer);
-                        WriteImplantTerminals(_objList, children, writer);
-                        WritePainboxes(_objList, children, writer);
-                        WriteGeneratorsAndTerminals(_objList, children, writer);
-                        writer.WriteLine("}");
+                            WriteCaptureConsole(_objList, children, writer);
+                            WriteDoorsAndLocks(_objList, ref _usedDoorIds, ref _usedLockIds, children, writer);
+                            WriteLockers(_objList, children, writer);
+                            WriteTerminalsAndSpawnPads(_objList, children, obj, writer);
+                            WriteResourceSilos(_objList, children, writer);
+                            WriteSpawnTubes(_objList, children, obj, writer);
+                            WriteProximityTerminals(_objList, children, writer);
+                            WriteTurrets(_objList, ref _lastTurretGUID, children, writer);
+                            WriteImplantTerminals(_objList, children, writer);
+                            WritePainboxes(_objList, children, writer);
+                            WriteGeneratorsAndTerminals(_objList, children, writer);
+                            writer.WriteLine("}");
+
+                            processed.Add(obj);
+                        }
                     }
 
-                    WriteLatticeLinks(mapNumber, writer);
+                    var zoneOwnedObjects = _objList.Where(x => x.Owner == null && !processed.Contains(x) && !_blacklistedTypes.Contains(x.ObjectType)).ToList();
+
+                    if (zoneOwnedObjects.Count() > 0)
+                    {
+                        
+                        writer.WriteLine("");
+                        writer.WriteLine("ZoneOwnedObjects()");
+                        writer.WriteLine("def ZoneOwnedObjects() : Unit = {");
+                        WriteCaptureConsole(_objList, zoneOwnedObjects, writer);
+                        WriteDoorsAndLocks(_objList, ref _usedDoorIds, ref _usedLockIds, zoneOwnedObjects, writer);
+                        WriteLockers(_objList, zoneOwnedObjects, writer);
+                        WriteTerminalsAndSpawnPads(_objList, zoneOwnedObjects, null, writer);
+                        WriteResourceSilos(_objList, zoneOwnedObjects, writer);
+                        WriteSpawnTubes(_objList, zoneOwnedObjects, null, writer);
+                        WriteProximityTerminals(_objList, zoneOwnedObjects, writer);
+                        WriteTurrets(_objList, ref _lastTurretGUID, zoneOwnedObjects, writer);
+                        WriteImplantTerminals(_objList, zoneOwnedObjects, writer);
+                        WritePainboxes(_objList, zoneOwnedObjects, writer);
+                        writer.WriteLine("}");
+                        
+                    }
+
+                    WriteLatticeLinks(map, writer);
+                    if(zplData.Count != 0) WriteZipLines(zplData, writer);
 
                     writer.WriteLine("}");
                     writer.WriteLine("}");
@@ -156,6 +210,27 @@ namespace PSF_MapGenerator
             });
 
             Console.WriteLine("Done");
+        }
+
+        private static void WriteZipLines(List<Zipline> zplData, StreamWriter writer)
+        {
+            writer.WriteLine("def ZipLines() : Unit = {");
+            foreach (var zipLinePath in zplData)
+            {
+                var line = "";
+                line += $"ZipLinePaths(new ZipLinePath({zipLinePath.PathId}, {zipLinePath.IsTeleporter.ToString().ToLower()}, List(";
+                for (int i = 0; i < zipLinePath.PathPoints.Count; i++)
+                {
+                    (float, float, float) point = zipLinePath.PathPoints[i];
+                    line += $"Vector3({point.Item1}f, {point.Item2}f, {point.Item3}f), ";
+                }
+                line = line.TrimEnd(',', ' ');
+                line += ")))";
+                writer.WriteLine(line);
+            }
+            writer.WriteLine("}");
+            writer.WriteLine("ZipLines()");
+            writer.WriteLine("");
         }
 
         private static void WriteGeneratorsAndTerminals(List<PlanetSideObject> _objList, List<PlanetSideObject> children, StreamWriter logWriter)
@@ -171,9 +246,9 @@ namespace PSF_MapGenerator
             logWriter.WriteLine($"LocalObject({terminal.GUID}, Terminal.Constructor(Vector3({terminal.AbsX}f, {terminal.AbsY}f, {terminal.AbsZ}f), gen_control, owning_building_guid = {_objList.Single(x => x.Id == terminal.Owner).GUID})");
         }
 
-        private static void WriteLatticeLinks(string mapNumber, StreamWriter writer)
+        private static void WriteLatticeLinks(Map map, StreamWriter writer)
         {
-            var links = objReader.GetByObjectName($"map{mapNumber}").Where(x => x[2].StartsWith("building_link_"));
+            var links = objReader.GetByObjectName($"{map.FilePrefix.ToLower()}{map.Number}").Where(x => x[2].StartsWith("building_link_"));
 
             writer.WriteLine("def Lattice() : Unit = {");
 
@@ -184,13 +259,14 @@ namespace PSF_MapGenerator
 
             writer.WriteLine("}");
             writer.WriteLine("Lattice()");
+            writer.WriteLine("");
         }
 
         private static void WriteTurrets(List<PlanetSideObject> _objList, ref int _lastTurretGUID, List<PlanetSideObject> children, StreamWriter logWriter)
         {
-            foreach (var turret in children.Where(x => x.ObjectType == "manned_turret"))
+            foreach (var turret in children.Where(x => x.ObjectType == "manned_turret" || x.ObjectType == "vanu_sentry_turret"))
             {
-                logWriter.WriteLine($"LocalObject({turret.GUID}, FacilityTurret.Constructor(Vector3({turret.AbsX}f, {turret.AbsY}f, {turret.AbsZ}f), manned_turret), owning_building_guid = {_objList.Single(x => x.Id == turret.Owner).GUID})");
+                logWriter.WriteLine($"LocalObject({turret.GUID}, FacilityTurret.Constructor(Vector3({turret.AbsX}f, {turret.AbsY}f, {turret.AbsZ}f), {turret.ObjectType}), owning_building_guid = {_objList.SingleOrDefault(x => x.Id == turret.Owner)?.GUID ?? 0})");
                 logWriter.WriteLine($"TurretToWeapon({turret.GUID}, {_lastTurretGUID})");
                 _lastTurretGUID++;
             }
@@ -219,11 +295,11 @@ namespace PSF_MapGenerator
 
         private static void WriteProximityTerminals(List<PlanetSideObject> _objList, List<PlanetSideObject> children, StreamWriter logWriter)
         {
-            var proximityTerminalTypes = new[] { "adv_med_terminal", "repair_silo", "pad_landing_frame", "pad_landing_tower_frame", "medical_terminal" };
+            var proximityTerminalTypes = new[] { "adv_med_terminal", "repair_silo", "pad_landing_frame", "pad_landing_tower_frame", "medical_terminal", "crystals_health_a", "crystals_health_b" };
 
             foreach (var proximityTerminal in children.Where(x => proximityTerminalTypes.Contains(x.ObjectType)))
             {
-                logWriter.WriteLine($"LocalObject({proximityTerminal.GUID}, ProximityTerminal.Constructor(Vector3({proximityTerminal.AbsX}f, {proximityTerminal.AbsY}f, {proximityTerminal.AbsZ}f), {proximityTerminal.ObjectType}), owning_building_guid = {_objList.Single(x => x.Id == proximityTerminal.Owner).GUID})");
+                logWriter.WriteLine($"LocalObject({proximityTerminal.GUID}, ProximityTerminal.Constructor(Vector3({proximityTerminal.AbsX}f, {proximityTerminal.AbsY}f, {proximityTerminal.AbsZ}f), {proximityTerminal.ObjectType}), owning_building_guid = {_objList.SingleOrDefault(x => x.Id == proximityTerminal.Owner)?.GUID ?? 0})");
 
                 // Some objects such as repair_silo and pad_landing_frame have special terminal objects (e.g. bfr rearm, ground vehicle repair, ground vehicle rearm) that should follow immediately after, with incrementing GUIDs.
                 // As such, these will be hardcoded for now.
@@ -251,16 +327,16 @@ namespace PSF_MapGenerator
 
         private static void WriteSpawnTubes(List<PlanetSideObject> _objList, List<PlanetSideObject> children, PlanetSideObject parent, StreamWriter logWriter)
         {
-            var respawnTubeTypes = new[] {"respawn_tube", "mb_respawn_tube"};
+            var respawnTubeTypes = new[] {"respawn_tube", "mb_respawn_tube", "redoubt_floor", "vanu_spawn_room_pad"};
 
             foreach (var spawnTube in children.Where(x => respawnTubeTypes.Contains(x.ObjectType)))
             {
                 var tubeType = "";
-                if (_towerTypes.Contains(parent.ObjectType))
+                if (_towerTypes.Contains(parent?.ObjectType))
                 {
                     tubeType = "respawn_tube_tower";
                 }
-                else if (parent.ObjectType.Contains("VT_building", StringComparison.OrdinalIgnoreCase))
+                else if (parent?.ObjectType.Contains("VT_building", StringComparison.OrdinalIgnoreCase) ?? false)
                 {
                     tubeType = "respawn_tube_sanctuary";
                 }
@@ -281,12 +357,16 @@ namespace PSF_MapGenerator
 
         private static void WriteTerminalsAndSpawnPads(List<PlanetSideObject> _objList, List<PlanetSideObject> children, PlanetSideObject parent, StreamWriter logWriter)
         {
-            var terminalTypes = new[] { "order_terminal", "spawn_terminal", "cert_terminal", "order_terminal" };
-            var terminalTypesWithSpawnPad = new[] { "ground_vehicle_terminal", "air_vehicle_terminal", "vehicle_terminal", "vehicle_terminal_combined", "dropship_vehicle_terminal" };
+            var terminalTypes = new[] { "order_terminal", "spawn_terminal", "cert_terminal", "order_terminal", "vanu_equipment_term" };
+            var terminalTypesWithSpawnPad = new[] { "ground_vehicle_terminal", "air_vehicle_terminal", "vehicle_terminal",
+                "vehicle_terminal_combined", "dropship_vehicle_terminal", "vanu_air_vehicle_term", "vanu_vehicle_term" };
 
             var allTerminalTypes = terminalTypes.Concat(terminalTypesWithSpawnPad);
 
-            var spawnPadList = children.Where(x => x.ObjectType == "mb_pad_creation" || x.ObjectType == "dropship_pad_doors").ToList();
+            var spawnPadList = children.Where(x => x.ObjectType == "mb_pad_creation" 
+                                                || x.ObjectType == "dropship_pad_doors" 
+                                                || x.ObjectType == "vanu_vehicle_creation_pad")
+                                                .ToList();
 
             foreach (var terminal in children.Where(x => allTerminalTypes.Contains(x.ObjectType)))
             {
@@ -309,7 +389,7 @@ namespace PSF_MapGenerator
                 // The scala codebase also uses ground_vehicle_terminal as the object type instead of vehicle_terminal, so we'll map to that for now.
                 if(terminal.ObjectType == "vehicle_terminal") { terminal.ObjectType = "ground_vehicle_terminal"; }
 
-                logWriter.WriteLine($"LocalObject({terminal.GUID}, Terminal.Constructor(Vector3({terminal.AbsX}f, {terminal.AbsY}f, {terminal.AbsZ}f), {terminal.ObjectType}), owning_building_guid = {_objList.Single(x => x.Id == terminal.Owner).GUID})");
+                logWriter.WriteLine($"LocalObject({terminal.GUID}, Terminal.Constructor(Vector3({terminal.AbsX}f, {terminal.AbsY}f, {terminal.AbsZ}f), {terminal.ObjectType}), owning_building_guid = {_objList.SingleOrDefault(x => x.Id == terminal.Owner)?.GUID ?? 0})");
 
                 if (terminalTypesWithSpawnPad.Contains(terminal.ObjectType))
                 {
@@ -349,7 +429,9 @@ namespace PSF_MapGenerator
 
         private static void WriteDoorsAndLocks(List<PlanetSideObject> _objList, ref List<int> _usedDoorIds, ref List<int> _usedLockIds, List<PlanetSideObject> children, StreamWriter logWriter)
         {
-            var doorTypes = new[] { "gr_door_garage_int", "gr_door_int", "gr_door_med", "spawn_tube_door", "amp_cap_door", "door_dsp", "gr_door_ext", "gr_door_garage_ext", "gr_door_main", "gr_door_mb_ext", "gr_door_mb_int", "gr_door_mb_lrg", "gr_door_mb_obsd", "gr_door_mb_orb", "door_spawn_mb" };
+            var doorTypes = new[] { "gr_door_garage_int", "gr_door_int", "gr_door_med", "spawn_tube_door", "amp_cap_door",
+                "door_dsp", "gr_door_ext", "gr_door_garage_ext", "gr_door_main", "gr_door_mb_ext", "gr_door_mb_int", "gr_door_mb_lrg",
+                "gr_door_mb_obsd", "gr_door_mb_orb", "door_spawn_mb", "ancient_door", "ancient_garage_door" };
 
             var lockTypes = new[] { "lock_external", "lock_garage", "lock_small" };
 
@@ -396,7 +478,7 @@ namespace PSF_MapGenerator
 
         private static void WriteCaptureConsole(List<PlanetSideObject> _objList, List<PlanetSideObject> children, StreamWriter logWriter)
         {
-            var captureTerminals = new[] { "capture_terminal", "secondary_capture" };
+            var captureTerminals = new[] { "capture_terminal", "secondary_capture", "vanu_control_console" };
             var objList = children.Where(x => captureTerminals.Contains(x.ObjectType));
             foreach (var obj in objList)
             {
