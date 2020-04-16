@@ -279,7 +279,7 @@ namespace PSF_MapGenerator
 
             foreach (var terminalMech in children.Where(x => x.ObjectType == "implant_terminal_mech"))
             {
-                logWriter.WriteLine($"LocalObject({terminalMech.GUID}, ImplantTerminalMech.Constructor, owning_building_guid = {_objList.Single(x => x.Id == terminalMech.Owner).GUID})");
+                logWriter.WriteLine($"LocalObject({terminalMech.GUID}, ImplantTerminalMech.Constructor(Vector3({terminalMech.AbsX}f, {terminalMech.AbsY}f, {terminalMech.AbsZ}f)), owning_building_guid = {_objList.Single(x => x.Id == terminalMech.Owner).GUID})");
 
                 var closestTerminal = terminalList.Select(x => new {
                         Distance = DistanceN(new float[] { terminalMech.AbsX, terminalMech.AbsY, terminalMech.AbsZ },
