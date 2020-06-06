@@ -9,6 +9,7 @@ using Formatting = Newtonsoft.Json.Formatting;
 using FileReaders;
 using FileReaders.Models;
 using AmenityExtractor.Models;
+using AmenityExtractor.Extensions;
 
 namespace AmenityExtractor
 {
@@ -250,7 +251,7 @@ namespace AmenityExtractor
                                 if (!guids.Contains((int)item.GUID))
                                 {
                                     Console.WriteLine(
-                                    $"Mismatch: {item.ObjectType}, GUID: {item.GUID} Expected in range: {string.Join(", ", guids)}");
+                                    $"Mismatch: {item.ObjectType}, GUID: {item.GUID} Expected in range: {guids.ToList().ToRangeString()}");
                                 }
                             }
                         }
