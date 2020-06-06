@@ -79,11 +79,5 @@ namespace AmenityExtractor
             { "vanu_module_node", Enumerable.Range(2993, 3064) },
             { "vehicle_terminal", Enumerable.Range(3065, 3076) },
         };
-
-        public static Dictionary<string, Dictionary<string, IEnumerable<int>>> MapToCounts =
-            new Dictionary<string, Dictionary<string, IEnumerable<int>>>
-            {
-                {"04", Ishundar}
-            };
     }
 }

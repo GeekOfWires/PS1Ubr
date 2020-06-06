@@ -77,11 +77,5 @@ namespace AmenityExtractor
             {"vanu_module_node", 72},
             {"vehicle_terminal", 12}
         };
-
-        public static Dictionary<string, Dictionary<string, int>> MapToCounts =
-           new Dictionary<string, Dictionary<string, int>>
-           {
-                {"04", Ishundar}
-           };
     }
 }

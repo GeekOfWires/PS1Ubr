@@ -189,10 +189,11 @@ namespace AmenityExtractor
                 }
 
                 // Sanity checking to make sure the amount of objects we've got matches a hand written list of expected objects
-                if (ExpectedObjectCounts.MapToCounts.ContainsKey(mapNumber))
+                if (typeof(ExpectedObjectCounts).GetField(mapName) != null)
                 {
+                    Console.WriteLine($"Sanity Checking object counts on map {mapNumber} {mapName}");
                     Console.ForegroundColor = ConsoleColor.Red;
-                    var expectedCounts = ExpectedObjectCounts.MapToCounts[mapNumber];
+                    var expectedCounts = (Dictionary<string, int>) typeof(ExpectedObjectCounts).GetField(mapName).GetValue(null);
                     var objectCounts = mapObjects.GroupBy(x => x.ObjectType)
                         .Select(group => new {Name = group.Key, Count = group.Count()})
                         .OrderBy(x => x.Name);
@@ -236,12 +237,13 @@ namespace AmenityExtractor
                 GUIDAssigner.AssignGUIDs(mapObjects, structuresWithGuids, entitiesWithGuids);
 
                 // Sanity checking that GUIDs match expected GUID ranges
-                if (ExpectedGuids.MapToCounts.ContainsKey(mapNumber))
+                if (typeof(ExpectedGuids).GetField(mapName) != null)
                 {
+                    Console.WriteLine($"Sanity Checking GUIDS on map {mapNumber} {mapName}");
                     Console.ForegroundColor = ConsoleColor.Red;
-                    var expectedGuids = ExpectedGuids.MapToCounts[mapNumber];
+                    var expectedGuids = (Dictionary<string, IEnumerable<int>>)typeof(ExpectedGuids).GetField(mapName).GetValue(null);
 
-                    foreach((string objectType, IEnumerable<int> guids) in expectedGuids)
+                    foreach ((string objectType, IEnumerable<int> guids) in expectedGuids)
                     {
                         var objects = mapObjects.Where(x => x.ObjectType == objectType);
                         if(objects.Any())
