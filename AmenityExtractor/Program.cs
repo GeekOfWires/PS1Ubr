@@ -282,6 +282,7 @@ namespace AmenityExtractor
                 AbsX = entry.HorizontalPosition,
                 AbsY = entry.VerticalPosition,
                 AbsZ = entry.HeightPosition,
+                Yaw = rotationDegrees,
                 MapID = mapId
             };
             mapObjects.Add(entryObject);

@@ -159,7 +159,7 @@ namespace PSF_MapGenerator
                             }
                             else
                             {
-                                writer.WriteLine($"LocalBuilding(\"{obj.ObjectName}\", {obj.GUID}, {obj.MapID}, FoundationBuilder(Building.Structure(StructureType.{structureType}, Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f), {obj.ObjectType})))");
+                                writer.WriteLine($"LocalBuilding(\"{obj.ObjectName}\", {obj.GUID}, {obj.MapID}, FoundationBuilder(Building.Structure(StructureType.{structureType}, Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f), Vector3(0f, 0f, {obj.Yaw}f), {obj.ObjectType})))");
                             }
 
                             WriteCaptureConsole(_objList, children, writer);
