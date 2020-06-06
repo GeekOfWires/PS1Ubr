@@ -187,14 +187,6 @@ namespace AmenityExtractor
                     }
                 }
 
-                var diff = allObjectsWithGuids.Except(mapObjects.Select(x => x.ObjectType));
-                foreach (var item in diff)
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"MISSING: {item}");
-                    Console.ForegroundColor = ConsoleColor.White;
-                }
-
                 // Sanity checking to make sure the amount of objects we've got matches a hand written list of expected objects
                 if (ExpectedObjectCounts.MapToCounts.ContainsKey(mapNumber))
                 {
