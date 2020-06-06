@@ -191,7 +191,7 @@ namespace AmenityExtractor
                 // Sanity checking to make sure the amount of objects we've got matches a hand written list of expected objects
                 if (typeof(ExpectedObjectCounts).GetField(mapName) != null)
                 {
-                    Console.WriteLine($"Sanity Checking object counts on map {mapNumber} {mapName}");
+                    Console.WriteLine($"Sanity checking object counts on map {mapNumber} {mapName}");
                     Console.ForegroundColor = ConsoleColor.Red;
                     var expectedCounts = (Dictionary<string, int>) typeof(ExpectedObjectCounts).GetField(mapName).GetValue(null);
                     var objectCounts = mapObjects.GroupBy(x => x.ObjectType)
@@ -239,13 +239,13 @@ namespace AmenityExtractor
                 // Sanity checking that GUIDs match expected GUID ranges
                 if (typeof(ExpectedGuids).GetField(mapName) != null)
                 {
-                    Console.WriteLine($"Sanity Checking GUIDS on map {mapNumber} {mapName}");
+                    Console.WriteLine($"Sanity checking GUIDs on map {mapNumber} {mapName}");
                     Console.ForegroundColor = ConsoleColor.Red;
                     var expectedGuids = (Dictionary<string, IEnumerable<int>>)typeof(ExpectedGuids).GetField(mapName).GetValue(null);
 
                     foreach ((string objectType, IEnumerable<int> guids) in expectedGuids)
                     {
-                        var objects = mapObjects.Where(x => x.ObjectType == objectType);
+                        var objects = mapObjects.Where(x => (x.HadBangPrefix) ? "!" + x.ObjectType == objectType : x.ObjectType == objectType);
                         if(objects.Any())
                         {
                             foreach (var item in objects)
