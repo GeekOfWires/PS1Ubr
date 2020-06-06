@@ -119,7 +119,7 @@ namespace PSF_MapGenerator
                     writer.WriteLine("import net.psforever.objects.serverobject.resourcesilo.ResourceSilo");
                     writer.WriteLine("import net.psforever.objects.serverobject.turret.FacilityTurret");
                     writer.WriteLine("import net.psforever.types.Vector3");
-                    writer.WriteLine("import import net.psforever.objects.serverobject.zipline.ZipLinePath");
+                    writer.WriteLine("import net.psforever.objects.serverobject.zipline.ZipLinePath");
                     writer.WriteLine("");
                     writer.WriteLine($"object {map.FilePrefix}{mapNumber} {{ // {mapName}");
                     writer.WriteLine($"val ZoneMap = new ZoneMap(\"{map.FilePrefix.ToLower()}{mapNumber}\") {{");
