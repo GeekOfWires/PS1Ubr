@@ -79,9 +79,9 @@ namespace AmenityExtractor
         };
 
         public static Dictionary<string, Dictionary<string, int>> MapToCounts =
-            new Dictionary<string, Dictionary<string, int>>
-            {
+           new Dictionary<string, Dictionary<string, int>>
+           {
                 {"04", Ishundar}
-            };
+           };
     }
 }

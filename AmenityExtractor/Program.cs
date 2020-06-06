@@ -234,6 +234,35 @@ namespace AmenityExtractor
                 // Assign GUIDs to loaded mapObjects
                 GUIDAssigner.AssignGUIDs(mapObjects, structuresWithGuids, entitiesWithGuids);
 
+                // Sanity checking that GUIDs match expected GUID ranges
+                if (ExpectedGuids.MapToCounts.ContainsKey(mapNumber))
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    var expectedGuids = ExpectedGuids.MapToCounts[mapNumber];
+
+                    foreach((string objectType, IEnumerable<int> guids) in expectedGuids)
+                    {
+                        var objects = mapObjects.Where(x => x.ObjectType == objectType);
+                        if(objects.Any())
+                        {
+                            foreach (var item in objects)
+                            {
+                                if (!guids.Contains((int)item.GUID))
+                                {
+                                    Console.WriteLine(
+                                    $"Mismatch: {item.ObjectType}, GUID: {item.GUID} Expected in range: {string.Join(", ", guids)}");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine($"No objects on map {mapNumber} matching expected object type {objectType}");
+                        }
+                    }
+
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
                 // Export to json file
                 var json = JsonConvert.SerializeObject(mapObjects.OrderBy(x => x.GUID), Formatting.Indented);
 
