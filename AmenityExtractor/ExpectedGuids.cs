@@ -8,7 +8,7 @@ namespace AmenityExtractor
         public static Dictionary<string, IEnumerable<int>> Ishundar = new Dictionary<string, IEnumerable<int>>()
         {
             // Structures / Zone owned objects
-            { "amp_station", Enumerable.Range(1, 1) },
+            { "amp_station", new List<int> { 1 } },
             { "bunker_gauntlet", Enumerable.Range(4, 8) },
             { "bunker_lg", Enumerable.Range(9, 12) },
             { "bunker_sm", Enumerable.Range(13, 17) },
@@ -23,7 +23,7 @@ namespace AmenityExtractor
             { "tower_c", Enumerable.Range(77, 88) },
             { "warpgate", Enumerable.Range(89, 92) },
 
-            // "Entities"
+            // "Inside" / "Ownable"
             { "ad_billboard_inside", Enumerable.Range(93, 151) },
             { "ad_billboard_inside_big", Enumerable.Range(152, 159) },
             { "ad_billboard_outside", Enumerable.Range(160, 167) },
@@ -78,6 +78,73 @@ namespace AmenityExtractor
             { "spawn_tube_door", Enumerable.Range(2887, 2992) },
             { "vanu_module_node", Enumerable.Range(2993, 3064) },
             { "vehicle_terminal", Enumerable.Range(3065, 3076) },
+        };
+
+        public static Dictionary<string, IEnumerable<int>> Byblos = new Dictionary<string, IEnumerable<int>>()
+        {
+            // Structures / Zone owned objects
+            { "ceiling_bldg_a", new List<int>() { 1 } },
+            { "ceiling_bldg_b", new List<int>() { 2 } },
+            { "ceiling_bldg_c", new List<int>() { 3 } },
+            { "ceiling_bldg_d", new List<int>() { 4, 5 } },
+            { "ceiling_bldg_e", new List<int>() { 6 } },
+            { "ceiling_bldg_f", new List<int>() { 7 } },
+            { "ceiling_bldg_g", new List<int>() { 8 } },
+            { "ceiling_bldg_h", new List<int>() { 9 } },
+            { "crystals_energy_a", new List<int>() { 10, 11 } },
+            { "crystals_energy_b", Enumerable.Range(12, 17) },
+            { "crystals_health_a", Enumerable.Range(18, 25) },
+            { "crystals_health_b", Enumerable.Range(26, 36) },
+            { "crystals_repair_a", Enumerable.Range(37, 45) },
+            { "crystals_repair_b", Enumerable.Range(46, 51) },
+            { "crystals_vehicle_a", new List<int>() { 53, 55, 57, 59, 61, 63, 65 } },
+            { "crystals_vehicle_b", new List<int>() { 67, 69, 71, 73, 75, 77, 79 } },
+            { "ground_bldg_a", new List<int>() { 81, 82 } },
+            { "ground_bldg_b", new List<int>() { 83 } },
+            { "ground_bldg_c", new List<int>() { 84, 85 } },
+            { "ground_bldg_d", new List<int>() { 86, 87 } },
+            { "ground_bldg_e", new List<int>() { 88, 89 } },
+            { "ground_bldg_f", new List<int>() { 90 } },
+            { "ground_bldg_g", new List<int>() { 91 } },
+            { "ground_bldg_h", new List<int>() { 92 } },
+            { "ground_bldg_i", new List<int>() { 93 } },
+            { "redoubt", new List<int>() { 94, 95 } },
+            { "stationaryteleportpad", Enumerable.Range(96, 151) },
+            { "vanu_control_point", new List<int>() { 152, 153 } },
+            { "vanu_core", new List<int>() { 154 } },
+            { "vanu_sentry_turret", Enumerable.Range(155, 180) },
+            { "vanu_vehicle_station", new List<int>() { 181, 182 } },
+            { "warpgate_cavern", new List<int>() { 183, 184, 185, 186 } },
+            { "zipline", Enumerable.Range(187, 598) },
+
+            // "Inside" / "Ownable"
+            { "ancient_door", Enumerable.Range(599, 722) },
+            { "ancient_garage_door", new List<int>() { 723, 724 } },
+            { "!crystals_energy_a", Enumerable.Range(725, 734) },
+            { "!crystals_energy_b", Enumerable.Range(735, 742) },
+            { "!crystals_health_a", new List<int>() { 743, 744 } },
+            { "!crystals_health_b", Enumerable.Range(745, 750) },
+            { "!crystals_repair_a", Enumerable.Range(751, 758) },
+            { "!crystals_repair_b", Enumerable.Range(759, 760) },
+            { "painbox_continuous", Enumerable.Range(761, 766) },
+            { "painbox_door_radius_continuous", Enumerable.Range(767, 774) },
+            { "redoubt_floor", new List<int>() { 775, 776 } },
+            { "!stationaryteleportpad", Enumerable.Range(777, 808) },
+            { "vanu_air_vehicle_term", new List<int>() { 809, 810, 811, 812 } },
+            { "vanu_center_beam", new List<int>() { 813 } },
+            { "vanu_control_console", Enumerable.Range(814, 819) },
+            { "vanu_equipment_term", Enumerable.Range(820, 867) },
+            { "vanu_module_node_bind", new List<int>() { 868, 869 } },
+            { "vanu_module_node_defender", new List<int>() { 870, 871 } },
+            { "vanu_module_node_energy", new List<int>() { 872, 873 } },
+            { "vanu_module_node_fortifier", new List<int>() { 874, 875 } },
+            { "vanu_module_node_vehicle", new List<int>() { 876, 877 } },
+            { "vanu_module_node_weapon", new List<int>() { 878, 879 } },
+            { "vanu_spawn_room_pad", new List<int>() { 880, 881 } },
+            { "vanu_vehicle_creation_pad", Enumerable.Range(882, 887) },
+            { "vanu_vehicle_term", new List<int>() { 888, 889 } },
+            { "vanumodulebeam", new List<int>() { 890 } },
+            { "!zipline", Enumerable.Range(891, 904) }
         };
     }
 }
