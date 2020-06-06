@@ -366,11 +366,16 @@ namespace AmenityExtractor
 
                 var (rotX, rotY) = MathFunctions.RotateXY(line.RelX, line.RelY, baseRotationRadians);
 
+
+                // Cavern buildings can contain crystals which are counted as both standalone and ownable objects
+                // If they're in a pe_edit line they should belong to a parent object, so prefix with "!" to make GUIDAssigner give it a GUID in the "ownable" range
+                var isInStructuresList = structuresWithGuids.Contains(line.ObjectName, StringComparer.OrdinalIgnoreCase);
+                var objectName = isInStructuresList ? "!" + line.ObjectName : line.ObjectName;
                 mapObjects.Add(new PlanetSideObject
                 {
                     Id = id,
-                    ObjectName = line.ObjectName,
-                    ObjectType = line.ObjectName,
+                    ObjectName = objectName,
+                    ObjectType = objectName,
                     Owner = ownerId,
                     AbsX = baseX + rotX,
                     AbsY = baseY + rotY,
