@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace AmenityExtractor
 {
     // This class is just used for debug/testing to ensure that all objects on a continent have been accounted for.
     // Building the counts is done by hand, refer to the order objects are initialized with GUIDs to try and find ranges for each continent.
-    public static class ExpectedCounts
+    public static class ExpectedObjectCounts
     {
-        public static Dictionary<string, int> ExpectedIshundarCounts = new Dictionary<string, int>()
+        public static Dictionary<string, int> Ishundar = new Dictionary<string, int>()
         {
             {"amp_station", 1},
             {"bunker_gauntlet", 5},
@@ -83,7 +81,7 @@ namespace AmenityExtractor
         public static Dictionary<string, Dictionary<string, int>> MapToCounts =
             new Dictionary<string, Dictionary<string, int>>
             {
-                {"04", ExpectedIshundarCounts}
+                {"04", Ishundar}
             };
     }
 }

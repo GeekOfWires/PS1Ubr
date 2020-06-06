@@ -196,10 +196,10 @@ namespace AmenityExtractor
                 }
 
                 // Sanity checking to make sure the amount of objects we've got matches a hand written list of expected objects
-                if (ExpectedCounts.MapToCounts.ContainsKey(mapNumber))
+                if (ExpectedObjectCounts.MapToCounts.ContainsKey(mapNumber))
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    var expectedCounts = ExpectedCounts.MapToCounts[mapNumber];
+                    var expectedCounts = ExpectedObjectCounts.MapToCounts[mapNumber];
                     var objectCounts = mapObjects.GroupBy(x => x.ObjectType)
                         .Select(group => new {Name = group.Key, Count = group.Count()})
                         .OrderBy(x => x.Name);
@@ -210,7 +210,7 @@ namespace AmenityExtractor
                                 $"Mismatch: {item.Name}, Got: {item.Count} Expected: {expectedCounts[item.Name]}");
                     }
 
-                    var expectingTotal = ExpectedCounts.ExpectedIshundarCounts.Sum(x => x.Value);
+                    var expectingTotal = ExpectedObjectCounts.Ishundar.Sum(x => x.Value);
 
                     if (expectingTotal != mapObjects.Count)
                     {
