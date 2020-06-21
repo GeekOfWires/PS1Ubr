@@ -6,7 +6,7 @@ namespace FileReaders.Models
 {
     public class Pe_Edit
     {
-        public string ObjectName { get; set; }
+        public string ObjectType { get; set; }
         public int ID { get; set; }
         public float RelX { get; set; }
         public float RelY { get; set; }
