@@ -10,12 +10,12 @@ namespace AmenityExtractor
         /*
          GUIDs are assigned in a very specific order, and certain objects have priority over others, for example structures are assigned GUIDs first
 
-         Some objects such as aircraft landing pads or repair silos have multiple GUIDs assigned. This is likely one GUID per function (e.g. one GUID for the rearm, one or more for repair. Exact details are unknown currently)
+         Some objects such as aircraft landing pads or repair silos have multiple GUIDs assigned. This is likely one GUID per function (e.g. one GUID for the rearm, one or more for repair / AT recharge. Exact details are unknown currently)
 
          GUIDs are typically assigned in the order of Object Type -> X Position -> Y Position -> Z Position
         */
 
-        public static void AssignGUIDs(List<PlanetSideObject> mapObjects, List<string> structuresWithGuids, List<string> entitiesWithGuids)
+        public static void AssignGUIDs(List<PlanetSideObject> mapObjects)
         {
             var currentGUID = 1;
 
@@ -37,13 +37,13 @@ namespace AmenityExtractor
 
             //Repair silos in sanctuaries aren't assigned to a building and are added in the groundcover file. Currently this will break the GUID assignments as a repair_silo is suddenly a structure in it's own right
             // For now, skip them by jumping ahead after the last HART building in each Sanctuary.
-            objectNamesWithMultipleGuids.Add("Esamir_HART", 24); // VS - 6 repair silos
-            objectNamesWithMultipleGuids.Add("Hart_Forseral", 48); // TR - 12 repair silos
-            objectNamesWithMultipleGuids.Add("Hart_Hossin", 24); // NC - 6 repair silos
+            //objectNamesWithMultipleGuids.Add("Esamir_HART", 24); // VS - 6 repair silos
+            //objectNamesWithMultipleGuids.Add("Hart_Forseral", 48); // TR - 12 repair silos
+            //objectNamesWithMultipleGuids.Add("Hart_Hossin", 24); // NC - 6 repair silos
 
             // First iterate over structures in the correct order
             foreach (var obj in mapObjects
-                .Where(x => !x.ObjectType.Contains("!") && structuresWithGuids.Contains(x.ObjectType, StringComparer.OrdinalIgnoreCase))
+                .Where(x => !x.IsChildObject)
                 .OrderBy(x => x.ObjectType)
                 .ThenBy(x => x.AbsX)
                 .ThenBy(x => x.AbsY)
@@ -59,8 +59,9 @@ namespace AmenityExtractor
             // There is an inconsistency with Verica on Amerish in that the base has zero rotation, so the CC external doors are on almost exactly the same X coordinates, but the game seems to order them the opposite way around (4871.424f = GUID 450, 4871.425f = GUID 451 with the normal assignment rules, reversed on client)
             // The easiest way around this is to just truncate the coords to 2 decimal places, then the ordering will be correct from the Y and Z coords.
             // On further inspection, it would seem FateJH has found another issue requiring even less precision, two of the medical terminals in VS sanctuary need a single decimal place of precision to be ordered correctly.
-            foreach (var obj in mapObjects.Where(x => entitiesWithGuids.Contains(x.ObjectType, StringComparer.OrdinalIgnoreCase))
-                .OrderBy(x => x.ObjectType.Replace("!", ""))
+            foreach (var obj in mapObjects
+                .Where(x => x.IsChildObject)
+                .OrderBy(x => x.ObjectType)
                 .ThenBy(x => Math.Truncate(x.AbsX * 10) / 10)
                 .ThenBy(x => Math.Truncate(x.AbsY * 10) / 10)
                 .ThenBy(x => Math.Truncate(x.AbsZ * 10) / 10))
