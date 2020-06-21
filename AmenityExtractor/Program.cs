@@ -9,6 +9,7 @@ using Formatting = Newtonsoft.Json.Formatting;
 using FileReaders;
 using FileReaders.Models;
 using AmenityExtractor.Models;
+using AmenityExtractor.Extensions;
 
 namespace AmenityExtractor
 {
@@ -187,19 +188,12 @@ namespace AmenityExtractor
                     }
                 }
 
-                var diff = allObjectsWithGuids.Except(mapObjects.Select(x => x.ObjectType));
-                foreach (var item in diff)
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"MISSING: {item}");
-                    Console.ForegroundColor = ConsoleColor.White;
-                }
-
                 // Sanity checking to make sure the amount of objects we've got matches a hand written list of expected objects
-                if (ExpectedCounts.MapToCounts.ContainsKey(mapNumber))
+                if (typeof(ExpectedObjectCounts).GetField(mapName) != null)
                 {
+                    Console.WriteLine($"Sanity checking object counts on map {mapNumber} {mapName}");
                     Console.ForegroundColor = ConsoleColor.Red;
-                    var expectedCounts = ExpectedCounts.MapToCounts[mapNumber];
+                    var expectedCounts = (Dictionary<string, int>) typeof(ExpectedObjectCounts).GetField(mapName).GetValue(null);
                     var objectCounts = mapObjects.GroupBy(x => x.ObjectType)
                         .Select(group => new {Name = group.Key, Count = group.Count()})
                         .OrderBy(x => x.Name);
@@ -210,7 +204,7 @@ namespace AmenityExtractor
                                 $"Mismatch: {item.Name}, Got: {item.Count} Expected: {expectedCounts[item.Name]}");
                     }
 
-                    var expectingTotal = ExpectedCounts.ExpectedIshundarCounts.Sum(x => x.Value);
+                    var expectingTotal = ExpectedObjectCounts.Ishundar.Sum(x => x.Value);
 
                     if (expectingTotal != mapObjects.Count)
                     {
@@ -241,6 +235,36 @@ namespace AmenityExtractor
 
                 // Assign GUIDs to loaded mapObjects
                 GUIDAssigner.AssignGUIDs(mapObjects, structuresWithGuids, entitiesWithGuids);
+
+                // Sanity checking that GUIDs match expected GUID ranges
+                if (typeof(ExpectedGuids).GetField(mapName) != null)
+                {
+                    Console.WriteLine($"Sanity checking GUIDs on map {mapNumber} {mapName}");
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    var expectedGuids = (Dictionary<string, IEnumerable<int>>)typeof(ExpectedGuids).GetField(mapName).GetValue(null);
+
+                    foreach ((string objectType, IEnumerable<int> guids) in expectedGuids)
+                    {
+                        var objects = mapObjects.Where(x => (x.HadBangPrefix) ? "!" + x.ObjectType == objectType : x.ObjectType == objectType);
+                        if(objects.Any())
+                        {
+                            foreach (var item in objects)
+                            {
+                                if (!guids.Contains((int)item.GUID))
+                                {
+                                    Console.WriteLine(
+                                    $"Mismatch: {item.ObjectType}, GUID: {item.GUID} Expected in range: {guids.ToList().ToRangeString()}");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine($"No objects on map {mapNumber} matching expected object type {objectType}");
+                        }
+                    }
+
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
 
                 // Export to json file
                 var json = JsonConvert.SerializeObject(mapObjects.OrderBy(x => x.GUID), Formatting.Indented);
@@ -282,6 +306,7 @@ namespace AmenityExtractor
                 AbsX = entry.HorizontalPosition,
                 AbsY = entry.VerticalPosition,
                 AbsZ = entry.HeightPosition,
+                Yaw = rotationDegrees,
                 MapID = mapId
             };
             mapObjects.Add(entryObject);
@@ -341,11 +366,16 @@ namespace AmenityExtractor
 
                 var (rotX, rotY) = MathFunctions.RotateXY(line.RelX, line.RelY, baseRotationRadians);
 
+
+                // Cavern buildings can contain crystals which are counted as both standalone and ownable objects
+                // If they're in a pe_edit line they should belong to a parent object, so prefix with "!" to make GUIDAssigner give it a GUID in the "ownable" range
+                var isInStructuresList = structuresWithGuids.Contains(line.ObjectName, StringComparer.OrdinalIgnoreCase);
+                var objectName = isInStructuresList ? "!" + line.ObjectName : line.ObjectName;
                 mapObjects.Add(new PlanetSideObject
                 {
                     Id = id,
-                    ObjectName = line.ObjectName,
-                    ObjectType = line.ObjectName,
+                    ObjectName = objectName,
+                    ObjectType = objectName,
                     Owner = ownerId,
                     AbsX = baseX + rotX,
                     AbsY = baseY + rotY,

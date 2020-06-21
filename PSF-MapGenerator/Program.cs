@@ -119,7 +119,7 @@ namespace PSF_MapGenerator
                     writer.WriteLine("import net.psforever.objects.serverobject.resourcesilo.ResourceSilo");
                     writer.WriteLine("import net.psforever.objects.serverobject.turret.FacilityTurret");
                     writer.WriteLine("import net.psforever.types.Vector3");
-                    writer.WriteLine("import import net.psforever.objects.serverobject.zipline.ZipLinePath");
+                    writer.WriteLine("import net.psforever.objects.serverobject.zipline.ZipLinePath");
                     writer.WriteLine("");
                     writer.WriteLine($"object {map.FilePrefix}{mapNumber} {{ // {mapName}");
                     writer.WriteLine($"val ZoneMap = new ZoneMap(\"{map.FilePrefix.ToLower()}{mapNumber}\") {{");
@@ -159,7 +159,7 @@ namespace PSF_MapGenerator
                             }
                             else
                             {
-                                writer.WriteLine($"LocalBuilding(\"{obj.ObjectName}\", {obj.GUID}, {obj.MapID}, FoundationBuilder(Building.Structure(StructureType.{structureType}, Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f), {obj.ObjectType})))");
+                                writer.WriteLine($"LocalBuilding(\"{obj.ObjectName}\", {obj.GUID}, {obj.MapID}, FoundationBuilder(Building.Structure(StructureType.{structureType}, Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f), Vector3(0f, 0f, {obj.Yaw}f), {obj.ObjectType})))");
                             }
 
                             WriteCaptureConsole(_objList, children, writer);
