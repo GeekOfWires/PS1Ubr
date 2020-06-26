@@ -9,10 +9,15 @@ namespace FileReaders
 {
     public static class MPOReader
     {
+        public static IEnumerable<string> AllMpoFiles { get; set; }
         public static List<MapObject> ReadMPOFile(string folderPath, string mapNumber)
         {
-            var mpoList = Directory.GetFiles(folderPath, "*.mpo", SearchOption.AllDirectories);
-            var mpoPath = mpoList.Single(x => x.EndsWith($"contents_map{mapNumber}.mpo"));
+            if(AllMpoFiles == null)
+            {
+                AllMpoFiles = Directory.GetFiles(folderPath, "*.mpo", SearchOption.AllDirectories).ToList();
+            }
+
+            var mpoPath = AllMpoFiles.Single(x => x.EndsWith($"contents_map{mapNumber}.mpo"));
 
             var mapNames = ReadMapNames(mpoPath);
             var pseLinks = LSTReader.ReadLSTFile(folderPath, mapNumber);

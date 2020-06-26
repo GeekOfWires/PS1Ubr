@@ -22,7 +22,7 @@ namespace PS1Ubr
             }
         }
 
-        public static CMeshSystem GetMeshSystem(string entityName, ref CUberData uberData)
+        public static CMeshSystem GetMeshSystem(string entityName, CUberData uberData)
         {
             if (UBRCache.ContainsKey(entityName.ToLower())) return UBRCache[entityName.ToLower()];
 

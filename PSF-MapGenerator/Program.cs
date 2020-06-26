@@ -311,7 +311,7 @@ namespace PSF_MapGenerator
                         //startup.pak-out/game_objects.adb.lst:27236:add_property repair_silo has_aggregate_rearm_terminal true
                         //startup.pak-out/game_objects.adb.lst:27237:add_property repair_silo has_aggregate_recharge_terminal true
 
-                        logWriter.WriteLine($"LocalObject({proximityTerminal.GUID + 1}, Terminal.Constructor(Vector3({proximityTerminal.AbsX}f, {proximityTerminal.AbsY}f, {proximityTerminal.AbsZ}f), ground_rearm_terminal), owning_building_guid = {_objList.Single(x => x.Id == proximityTerminal.Owner).GUID})");
+                        logWriter.WriteLine($"LocalObject({proximityTerminal.GUID + 1}, Terminal.Constructor(Vector3({proximityTerminal.AbsX}f, {proximityTerminal.AbsY}f, {proximityTerminal.AbsZ}f), ground_rearm_terminal), owning_building_guid = {_objList.SingleOrDefault(x => x.Id == proximityTerminal.Owner)?.GUID ?? 0})");
                         break;
                     case "pad_landing_frame":
                     case "pad_landing_tower_frame":

@@ -1,34 +1,36 @@
 ﻿using FileReaders.Models;
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace PS1Ubr
 {
     public static class LSTReader
     {
+        private static IEnumerable<string> AllLstFiles { get; set; }
+
         public static List<GroundCover> ReadGroundCoverLST(string basePath, string mapNumber, bool isCave)
         {
-            var allLstFiles = Directory.GetFiles(basePath, "*.lst", SearchOption.AllDirectories).Where(x => !x.Contains("expansion1.pak-out")); // Exclude duplicate/old? cave files
+            if(AllLstFiles == null)
+            {
+                AllLstFiles = Directory.GetFiles(basePath, "*.lst", SearchOption.AllDirectories).Where(x => !x.Contains("expansion1.pak-out")); // Exclude duplicate/old? cave files
+            }
 
             var groundcoverFileName = !isCave ? $"groundcover_map{mapNumber}.lst" : $"groundcover_ugd{mapNumber}.lst";
-            string lst = allLstFiles.Single(x => x.EndsWith(groundcoverFileName));
+            string lst = AllLstFiles.Single(x => x.EndsWith(groundcoverFileName));
 
             var groundCover = new List<GroundCover>();
-            if (System.IO.File.Exists(lst))
+            if (File.Exists(lst))
             {
-                var lstData = System.IO.File.ReadAllLines(lst);
+                var lstData = File.ReadAllLines(lst);
 
                 foreach (var data in lstData)
                 {
                     if (!string.IsNullOrWhiteSpace(data))
                     {
                         var line = Regex.Replace(data, @"\s+", " ").Split(" "); // Replace extra whitespace with a single occurence
-                    
+
                         groundCover.Add(new GroundCover
                         {
                             LstType = line[0],
@@ -61,9 +63,9 @@ namespace PS1Ubr
             var peEdits = new List<Pe_Edit>();
             var peHiddens = new List<Pe_Hidden>();
 
-            if (System.IO.File.Exists(baseLst))
+            if (File.Exists(baseLst))
             {
-                var lstData = System.IO.File.ReadAllLines(baseLst);
+                var lstData = File.ReadAllLines(baseLst);
 
                 foreach (var data in lstData)
                 {
@@ -72,7 +74,7 @@ namespace PS1Ubr
                     {
                         peEdits.Add(new Pe_Edit
                         {
-                            ObjectName = line[1].Replace("\"", string.Empty),
+                            ObjectType = line[1].Replace("\"", string.Empty),
                             ID = int.Parse(line[2]),
                             RelX = float.Parse(line[3]),
                             RelY = float.Parse(line[4]),
@@ -99,9 +101,9 @@ namespace PS1Ubr
             {
                 var additionalLst = allLstFiles.Where(x => !x.Contains("expansion1.pak-out")).SingleOrDefault(x => x.EndsWith($"{entryLstType.ToLower()}.lst")); // Exclude duplicate/old? cave files
 
-                if (System.IO.File.Exists(additionalLst))
+                if (File.Exists(additionalLst))
                 {
-                    var lstData = System.IO.File.ReadAllLines(additionalLst);
+                    var lstData = File.ReadAllLines(additionalLst);
 
                     foreach (var data in lstData)
                     {

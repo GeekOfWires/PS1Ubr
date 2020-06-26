@@ -16,10 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="EntitiesWithGuids.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="RelativeObjectsToLoad.txt">
+    <None Update="ObjectsWithGuids.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="StructuresWithGuids.txt">
