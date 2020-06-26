@@ -50,7 +50,7 @@ namespace AmenityExtractor
 
                 void CheckGuidRanges(Dictionary<string, IEnumerable<int>> expectedGuids, bool isChildGuids)
                 {
-                    foreach ((string objectType, IEnumerable<int> guids) in topLevelGuids)
+                    foreach ((string objectType, IEnumerable<int> guids) in expectedGuids)
                     {
                         var objects = identifiableObjects.Where(x => x.ObjectType == objectType && x.IsChildObject == isChildGuids);
                         if (objects.Any())
@@ -72,7 +72,7 @@ namespace AmenityExtractor
                 }
 
                 CheckGuidRanges(topLevelGuids, isChildGuids: false);
-                CheckGuidRanges(topLevelGuids, isChildGuids: true);
+                CheckGuidRanges(childGuids, isChildGuids: true);
 
                 Console.ForegroundColor = ConsoleColor.White;
             }
