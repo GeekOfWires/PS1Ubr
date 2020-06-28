@@ -353,7 +353,7 @@ namespace PSF_MapGenerator
             var silo = children.SingleOrDefault(x => x.ObjectType == "resource_silo");
             if (silo == null) return;
 
-            logWriter.WriteLine($"LocalObject({silo.GUID}, ResourceSilo.Constructor, owning_building_guid = {_objList.Single(x => x.Id == silo.Owner).GUID})");
+            logWriter.WriteLine($"LocalObject({silo.GUID}, ResourceSilo.Constructor(Vector3({silo.AbsX}f, {silo.AbsY}f, {silo.AbsZ}f)), owning_building_guid = {_objList.Single(x => x.Id == silo.Owner).GUID})");
         }
 
         private static void WriteTerminalsAndSpawnPads(List<PlanetSideObject> _objList, List<PlanetSideObject> children, PlanetSideObject parent, StreamWriter logWriter)
@@ -483,7 +483,7 @@ namespace PSF_MapGenerator
             var objList = children.Where(x => captureTerminals.Contains(x.ObjectType));
             foreach (var obj in objList)
             {
-                logWriter.WriteLine($"LocalObject({obj.GUID}, CaptureTerminal.Constructor({obj.ObjectType}), owning_building_guid = {_objList.Single(x => x.Id == obj.Owner).GUID})");
+                logWriter.WriteLine($"LocalObject({obj.GUID}, CaptureTerminal.Constructor(Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f), {obj.ObjectType}), owning_building_guid = {_objList.Single(x => x.Id == obj.Owner).GUID})");
             }
         }
 
