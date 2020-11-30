@@ -116,6 +116,14 @@ namespace AmenityExtractor
 
                 var filename = !isCave ? $"guids_map{mapNumber}.json" : $"guids_ugd{mapNumber}.json";
                 File.WriteAllText(filename, json);
+
+                if(isCave)
+                {
+                    // Read zipline data, reformat and export as json
+                    var zplData = ZplReader.ReadZplFile(_planetsideModReadyFolder, mapNumber);
+
+                    File.WriteAllText($"zpl_ugd{mapNumber}.json", JsonConvert.SerializeObject(zplData, Formatting.Indented));
+                }
             }
 
             Console.WriteLine("Done");

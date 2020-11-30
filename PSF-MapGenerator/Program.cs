@@ -222,8 +222,8 @@ namespace PSF_MapGenerator
                 line += $"ZipLinePaths(new ZipLinePath({zipLinePath.PathId}, {zipLinePath.IsTeleporter.ToString().ToLower()}, List(";
                 for (int i = 0; i < zipLinePath.PathPoints.Count; i++)
                 {
-                    (float, float, float) point = zipLinePath.PathPoints[i];
-                    line += $"Vector3({point.Item1}f, {point.Item2}f, {point.Item3}f), ";
+                    var point = zipLinePath.PathPoints[i];
+                    line += $"Vector3({point.X}f, {point.Y}f, {point.Z}f), ";
                 }
                 line = line.TrimEnd(',', ' ');
                 line += ")))";
