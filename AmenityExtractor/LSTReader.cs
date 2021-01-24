@@ -10,12 +10,17 @@ namespace PS1Ubr
     {
         private static IEnumerable<string> AllLstFiles { get; set; }
 
-        public static List<GroundCover> ReadGroundCoverLST(string basePath, string mapNumber, bool isCave)
+        private static void PopulateLstFiles(string basePath)
         {
-            if(AllLstFiles == null)
+            if (AllLstFiles == null)
             {
                 AllLstFiles = Directory.GetFiles(basePath, "*.lst", SearchOption.AllDirectories).Where(x => !x.Contains("expansion1.pak-out")); // Exclude duplicate/old? cave files
             }
+        }
+
+        public static List<GroundCover> ReadGroundCoverLST(string basePath, string mapNumber, bool isCave)
+        {
+            PopulateLstFiles(basePath);
 
             var groundcoverFileName = !isCave ? $"groundcover_map{mapNumber}.lst" : $"groundcover_ugd{mapNumber}.lst";
             string lst = AllLstFiles.Single(x => x.EndsWith(groundcoverFileName));
@@ -57,8 +62,8 @@ namespace PS1Ubr
         public static (List<Pe_Hidden> peHiddens, List<Pe_Edit> peEdits, List<Pse_RelativeObject> pseRelativeObjects) ReadLSTFile(string mapResourcesFolder, string objectType, string entryLstType)
         {
             // First read the base .lst file with the pe_edit lines e.g. amp_station.lst if it exists
-            var allLstFiles = Directory.GetFiles(mapResourcesFolder, "*.lst", SearchOption.AllDirectories);
-            var baseLst = allLstFiles.Where(x => !x.Contains("expansion1.pak-out")).SingleOrDefault(x => x.EndsWith($"{objectType.ToLower()}.lst")); // Exclude duplicate/old? cave files
+            PopulateLstFiles(mapResourcesFolder);
+            var baseLst = AllLstFiles.SingleOrDefault(x => x.EndsWith($"{objectType.ToLower()}.lst")); // Exclude duplicate/old? cave files
 
             var peEdits = new List<Pe_Edit>();
             var peHiddens = new List<Pe_Hidden>();
@@ -99,7 +104,7 @@ namespace PS1Ubr
             // Then read the additional .lst file for this type if applicable with the pse_relativeobject lines e.g. amp_station_3.lst
             if (entryLstType != null)
             {
-                var additionalLst = allLstFiles.Where(x => !x.Contains("expansion1.pak-out")).SingleOrDefault(x => x.EndsWith($"{entryLstType.ToLower()}.lst")); // Exclude duplicate/old? cave files
+                var additionalLst = AllLstFiles.SingleOrDefault(x => x.EndsWith($"{entryLstType.ToLower()}.lst")); // Exclude duplicate/old? cave files
 
                 if (File.Exists(additionalLst))
                 {
