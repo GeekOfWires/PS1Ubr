@@ -33,7 +33,7 @@ namespace FileReaders
 
                 if (line[0] == "zip_path_point")
                 {
-                    current.PathPoints.Add((float.Parse(line[1]), float.Parse(line[2]), float.Parse(line[3])));
+                    current.PathPoints.Add(new System.Numerics.Vector3(float.Parse(line[1]), float.Parse(line[2]), float.Parse(line[3])));
                 }
 
                 if (line[0] == "zip_end_path")

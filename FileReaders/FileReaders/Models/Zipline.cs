@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Numerics;
 
 namespace FileReaders.Models
 {
@@ -6,6 +7,6 @@ namespace FileReaders.Models
     {
         public int PathId { get; set; }
         public bool IsTeleporter { get; set; }
-        public List<(float, float, float)> PathPoints { get; set; } = new List<(float, float, float)>();
+        public List<Vector3> PathPoints { get; set; } = new List<Vector3>();
     }
 }
