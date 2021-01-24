@@ -20,6 +20,7 @@ namespace AmenityExtractor
 
         private static List<string> _objectsWithGuids = new List<string>(File.ReadAllLines("ObjectsWithGuids.txt"));
         private static ConcurrentDictionary<string, CUberData> _ubrData = new ConcurrentDictionary<string, CUberData>();
+        private static GameObjectsReader objReader = new GameObjectsReader(_planetsideModReadyFolder);
 
         static void Main(string[] args)
         {
@@ -111,10 +112,12 @@ namespace AmenityExtractor
                 // Sanity checking that assigned GUIDs match expected GUID ranges
                 SanityChecker.CheckGuidRanges(identifiableObjects, mapName, mapNumber);
 
+                RemoveUnusedLluSockets(identifiableObjects, mapNumber);
+
                 // Export to json file
                 var json = JsonConvert.SerializeObject(identifiableObjects.OrderBy(x => x.GUID), Formatting.Indented);
 
-                var filename = !isCave ? $"guids_map{mapNumber}.json" : $"guids_ugd{mapNumber}.json";
+                var filename = !isCave ? $"map{mapNumber}.json" : $"ugd{mapNumber}.json";
                 File.WriteAllText(filename, json);
 
                 if(isCave)
@@ -275,6 +278,36 @@ namespace AmenityExtractor
                     id++;
                 }
             }
+        }
+
+        private static void RemoveUnusedLluSockets(List<PlanetSideObject> identifiableObjects, string mapNumber)
+        {
+            // Remove any LLU sockets from non-CTF bases. Technically all bases have these, but they are hidden and unused by the client.
+            var objectTypesToCheck = new List<string>
+            {
+                "amp_station",
+                "cryo_facility",
+                "comm_station",
+                "comm_station_dsp",
+                "tech_plant"
+            };
+
+            var socketsToRemove = new List<PlanetSideObject>();
+            foreach (var obj in identifiableObjects.Where(x => objectTypesToCheck.Contains(x.ObjectType.ToLower())))
+            { 
+                var isCtfBase = objReader.GetByObjectName($"map{mapNumber}").Any(x => x[2].StartsWith("building_ctf_") && x[3].ToLower() == obj.ObjectName.ToLower());
+
+                if (!isCtfBase)
+                {
+                    var socket = identifiableObjects.SingleOrDefault(x => x.ObjectType == "llm_socket" && x.Owner == obj.Id);
+                    if (socket != null)
+                    {
+                        socketsToRemove.Add(socket);
+                    }
+                }
+            }
+
+            identifiableObjects.RemoveAll(x => socketsToRemove.Select(y => y.Id).Contains(x.Id));
         }
     }
 }
