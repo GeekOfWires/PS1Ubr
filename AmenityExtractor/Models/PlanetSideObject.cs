@@ -1,4 +1,6 @@
-﻿namespace AmenityExtractor.Models
+﻿using Newtonsoft.Json;
+
+namespace AmenityExtractor.Models
 {
     public class PlanetSideObject
     {
@@ -11,6 +13,7 @@
         public float AbsY { get; set; }
         public float AbsZ { get; set; }
 
+        [JsonProperty("Yaw")]
         public double YawDegrees { get; set; }
 
         public int? GUID { get; set; }
