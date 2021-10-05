@@ -253,7 +253,7 @@ namespace AmenityExtractor
                 var (relativeObjectRotX, relativeObjectRotY) = MathFunctions.RotateXY(line.RelX, line.RelY, MathFunctions.DegreesToRadians(ownerObject.YawDegrees));
                 (float x, float y, float z) relativeObjectPos = (relativeObjectRotX + ownerObject.AbsX, relativeObjectRotY + ownerObject.AbsY, line.RelZ + ownerObject.AbsZ);
 
-                var relativeObjectRotationDegrees = MathFunctions.PS1RotationToDegrees((int)line.Roll);
+                var relativeObjectRotationDegrees = MathFunctions.PS1RotationToDegrees((int)line.Yaw);
 
                 // Process any sub-objects in the ubr file for this relative object (e.g. bfr_door within bfr_building ubr)
                 foreach (var meshItem in mesh.PortalSystem.MeshItems)

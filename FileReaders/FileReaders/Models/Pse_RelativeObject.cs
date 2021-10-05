@@ -14,7 +14,7 @@ namespace FileReaders.Models
         public float ScaleY { get; set; }
         public float ScaleZ { get; set; }
         public float Pitch { get; set; }
-        public float Yaw { get; set; }
         public float Roll { get; set; }
+        public float Yaw { get; set; }
     }
 }
