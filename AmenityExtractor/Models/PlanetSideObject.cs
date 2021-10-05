@@ -11,7 +11,7 @@
         public float AbsY { get; set; }
         public float AbsZ { get; set; }
 
-        public double Yaw { get; set; }
+        public double YawDegrees { get; set; }
 
         public int? GUID { get; set; }
 
