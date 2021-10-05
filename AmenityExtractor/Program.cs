@@ -24,29 +24,29 @@ namespace AmenityExtractor
         static void Main(string[] args)
         {
             var maps = new List<(string name, string mapNumber, bool isCave)> {
-                                                            //( "Solsar", "01", false),
-                                                            //( "Hossin", "02", false),
-                                                            //( "Cyssor", "03", false ),
-                                                            //( "Ishundar", "04", false ),
-                                                            //( "Forseral", "05", false ),
+                                                            ( "Solsar", "01", false),
+                                                            ( "Hossin", "02", false),
+                                                            ( "Cyssor", "03", false ),
+                                                            ( "Ishundar", "04", false ),
+                                                            ( "Forseral", "05", false ),
                                                             ( "Ceryshen", "06", false ),
-                                                            //( "Esamir", "07", false ),
-                                                            //( "Oshur Prime", "08", false ),
-                                                            //( "Searhus", "09", false ),
-                                                            //( "Amerish", "10", false ),
-                                                            //( "HOME1 (NEW CONGLOMORATE SANCTUARY)", "11", false ),
-                                                            //( "HOME2 (TERRAN REPUBLIC SANCTUARY)", "12", false ),
-                                                            //( "HOME3 (VANU SOVREIGNTY SANCTUARY)", "13", false ),
-                                                            //( "Nexus", "96", false ),
-                                                            //( "Desolation", "97", false ),
-                                                            //( "Ascension", "98", false ),
-                                                            //( "Extinction", "99", false ),
-                                                            //( "Supai", "01", true ),
-                                                            //( "Hunhau", "02", true ),
-                                                            //( "Adlivun", "03", true ),
-                                                            //( "Byblos", "04", true ),
-                                                            //( "Annwn", "05", true ),
-                                                            //( "Drugaskan", "06", true )
+                                                            ( "Esamir", "07", false ),
+                                                            ( "Oshur Prime", "08", false ),
+                                                            ( "Searhus", "09", false ),
+                                                            ( "Amerish", "10", false ),
+                                                            ( "HOME1 (NEW CONGLOMORATE SANCTUARY)", "11", false ),
+                                                            ( "HOME2 (TERRAN REPUBLIC SANCTUARY)", "12", false ),
+                                                            ( "HOME3 (VANU SOVREIGNTY SANCTUARY)", "13", false ),
+                                                            ( "Nexus", "96", false ),
+                                                            ( "Desolation", "97", false ),
+                                                            ( "Ascension", "98", false ),
+                                                            ( "Extinction", "99", false ),
+                                                            ( "Supai", "01", true ),
+                                                            ( "Hunhau", "02", true ),
+                                                            ( "Adlivun", "03", true ),
+                                                            ( "Byblos", "04", true ),
+                                                            ( "Annwn", "05", true ),
+                                                            ( "Drugaskan", "06", true )
             };
 
             // Load all *.ubr files
@@ -114,7 +114,7 @@ namespace AmenityExtractor
                 // Export to json file
                 var json = JsonConvert.SerializeObject(identifiableObjects.OrderBy(x => x.GUID), Formatting.Indented);
 
-                var filename = !isCave ? $"guids_map{mapNumber}.json" : $"guids_ugd{mapNumber}.json";
+                var filename = !isCave ? $"map{mapNumber}.json" : $"ugd{mapNumber}.json";
                 File.WriteAllText(filename, json);
 
                 if (isCave)
