@@ -114,10 +114,10 @@ namespace AmenityExtractor
                 // Export to json file
                 var json = JsonConvert.SerializeObject(identifiableObjects.OrderBy(x => x.GUID), Formatting.Indented);
 
-                var filename = !isCave ? $"guids_map{mapNumber}.json" : $"guids_ugd{mapNumber}.json";
+                var filename = !isCave ? $"map{mapNumber}.json" : $"ugd{mapNumber}.json";
                 File.WriteAllText(filename, json);
 
-                if(isCave)
+                if (isCave)
                 {
                     // Read zipline data, reformat and export as json
                     var zplData = ZplReader.ReadZplFile(_planetsideModReadyFolder, mapNumber);
@@ -167,7 +167,7 @@ namespace AmenityExtractor
                 AbsX = entry.HorizontalPosition,
                 AbsY = entry.VerticalPosition,
                 AbsZ = entry.HeightPosition,
-                Yaw = objectRotationDegrees,
+                YawDegrees = objectRotationDegrees,
                 MapID = mapId,
                 IsChildObject = !isTopLevel
             };
@@ -205,15 +205,15 @@ namespace AmenityExtractor
                     AbsX = entry.HorizontalPosition + rotX,
                     AbsY = entry.VerticalPosition + rotY,
                     AbsZ = entry.HeightPosition + meshItem.Transform[14],
-                    Yaw = MathFunctions.NormalizeDegrees((int)yaw),
+                    YawDegrees = MathFunctions.NormalizeDegrees((int)yaw),
                     IsChildObject = true
                 });
                 id++;
             }
-            
+
             ProcessLSTPeEdits(peEdits, identifiableObjects, objectRotationRadians, baseX: entry.HorizontalPosition, baseY: entry.VerticalPosition, baseZ: entry.HeightPosition, ownerId: entryObject.Id, id: ref id);
 
-            ProcessLSTPseRelativeObjects(pseRelativeObjects, identifiableObjects, objectRotationRadians, baseZ: entry.HeightPosition, ownerId: entryObject.Id, id: ref id);
+            ProcessLSTPseRelativeObjects(pseRelativeObjects, identifiableObjects, ownerObject: entryObject, id: ref id);
         }
 
         private static void ProcessLSTPeEdits(List<Pe_Edit> peEdits, List<PlanetSideObject> identifiableObjects, double baseRotationRadians, float baseX, float baseY, float baseZ, int ownerId, ref int id)
@@ -239,7 +239,7 @@ namespace AmenityExtractor
             }
         }
 
-        private static void ProcessLSTPseRelativeObjects(List<Pse_RelativeObject> pseRelativeObjects, List<PlanetSideObject> identifiableObjects, double baseRotationRadians, float baseZ, int ownerId, ref int id)
+        private static void ProcessLSTPseRelativeObjects(List<Pse_RelativeObject> pseRelativeObjects, List<PlanetSideObject> identifiableObjects, PlanetSideObject ownerObject, ref int id)
         {
             foreach (var line in pseRelativeObjects)
             {
@@ -250,26 +250,28 @@ namespace AmenityExtractor
                     x.Value.Entries.Select(y => y.Name).Contains(line.ObjectName.ToLower()));
                 var mesh = UBRReader.GetMeshSystem(line.ObjectName, uber.Value);
 
-                var (parentRotX, parentRotY) =
-                    MathFunctions.RotateXY(line.RelX, line.RelY, baseRotationRadians);
-                (float x, float y, float z) parentPos = (parentRotX, parentRotY,
-                    baseZ + line.RelZ);
+                var (relativeObjectRotX, relativeObjectRotY) = MathFunctions.RotateXY(line.RelX, line.RelY, MathFunctions.DegreesToRadians(ownerObject.YawDegrees));
+                (float x, float y, float z) relativeObjectPos = (relativeObjectRotX + ownerObject.AbsX, relativeObjectRotY + ownerObject.AbsY, line.RelZ + ownerObject.AbsZ);
 
+                var relativeObjectRotationDegrees = MathFunctions.PS1RotationToDegrees((int)line.Yaw);
+
+                // Process any sub-objects in the ubr file for this relative object (e.g. bfr_door within bfr_building ubr)
                 foreach (var meshItem in mesh.PortalSystem.MeshItems)
                 {
                     if (!_objectsWithGuids.Contains(meshItem.AssetName)) continue;
 
-                    var (rotX, rotY) = MathFunctions.RotateXY(meshItem.Transform[12], meshItem.Transform[13],
-                        baseRotationRadians);
+                    var subObjectRotationDegrees = MathFunctions.TransformToRotationDegrees(meshItem.Transform);
+
+                    var (subObjectRotX, subObjectRotY) = MathFunctions.RotateXY(meshItem.Transform[12], meshItem.Transform[13], MathFunctions.DegreesToRadians(ownerObject.YawDegrees + relativeObjectRotationDegrees));
                     identifiableObjects.Add(new PlanetSideObject
                     {
                         Id = id,
                         ObjectName = meshItem.AssetName,
                         ObjectType = meshItem.AssetName,
-                        Owner = ownerId,
-                        AbsX = parentPos.x + rotX,
-                        AbsY = parentPos.y + rotY,
-                        AbsZ = parentPos.z + line.RelZ,
+                        Owner = ownerObject.Id,
+                        AbsX = relativeObjectPos.x + subObjectRotX,
+                        AbsY = relativeObjectPos.y + subObjectRotY,
+                        AbsZ = relativeObjectPos.z + line.RelZ,
                         IsChildObject = true
                     });
                     id++;

@@ -159,7 +159,7 @@ namespace PSF_MapGenerator
                             }
                             else
                             {
-                                writer.WriteLine($"LocalBuilding(\"{obj.ObjectName}\", {obj.GUID}, {obj.MapID}, FoundationBuilder(Building.Structure(StructureType.{structureType}, Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f), Vector3(0f, 0f, {obj.Yaw}f), {obj.ObjectType})))");
+                                writer.WriteLine($"LocalBuilding(\"{obj.ObjectName}\", {obj.GUID}, {obj.MapID}, FoundationBuilder(Building.Structure(StructureType.{structureType}, Vector3({obj.AbsX}f, {obj.AbsY}f, {obj.AbsZ}f), Vector3(0f, 0f, {obj.YawDegrees}f), {obj.ObjectType})))");
                             }
 
                             WriteCaptureConsole(_objList, children, writer);
@@ -343,8 +343,8 @@ namespace PSF_MapGenerator
                 }
 
                 logWriter.WriteLine(tubeType == ""
-                    ? $"LocalObject({spawnTube.GUID}, SpawnTube.Constructor(Vector3({spawnTube.AbsX}f, {spawnTube.AbsY}f, {spawnTube.AbsZ}f), Vector3(0, 0, {spawnTube.Yaw})), owning_building_guid = {_objList.Single(x => x.Id == spawnTube.Owner).GUID})"
-                    : $"LocalObject({spawnTube.GUID}, SpawnTube.Constructor(Vector3({spawnTube.AbsX}f, {spawnTube.AbsY}f, {spawnTube.AbsZ}f), {tubeType}, Vector3(0, 0, {spawnTube.Yaw})), owning_building_guid = {_objList.Single(x => x.Id == spawnTube.Owner).GUID})");
+                    ? $"LocalObject({spawnTube.GUID}, SpawnTube.Constructor(Vector3({spawnTube.AbsX}f, {spawnTube.AbsY}f, {spawnTube.AbsZ}f), Vector3(0, 0, {spawnTube.YawDegrees})), owning_building_guid = {_objList.Single(x => x.Id == spawnTube.Owner).GUID})"
+                    : $"LocalObject({spawnTube.GUID}, SpawnTube.Constructor(Vector3({spawnTube.AbsX}f, {spawnTube.AbsY}f, {spawnTube.AbsZ}f), {tubeType}, Vector3(0, 0, {spawnTube.YawDegrees})), owning_building_guid = {_objList.Single(x => x.Id == spawnTube.Owner).GUID})");
             }
         }
 
@@ -405,7 +405,7 @@ namespace PSF_MapGenerator
 
                     // It appears that spawn pads have a default rotation that it +90 degrees from where it should be, presumably the model is rotated differently to the expected orientation - this can be handled here in the map generation
                     // On top of that, some spawn pads also have an additional rotation (vehiclecreationzorientoffset) when spawning vehicles set in game_objects.adb.lst - this should be handled on the Scala side
-                    var adjustedYaw = closestSpawnPad.Yaw - 90;
+                    var adjustedYaw = closestSpawnPad.YawDegrees - 90;
 
                     logWriter.WriteLine($"LocalObject({closestSpawnPad.GUID}, VehicleSpawnPad.Constructor(Vector3({closestSpawnPad.AbsX}f, {closestSpawnPad.AbsY}f, {closestSpawnPad.AbsZ}f), {closestSpawnPad.ObjectType}, Vector3(0, 0,{adjustedYaw})), owning_building_guid = {_objList.Single(x => x.Id == closestSpawnPad.Owner).GUID}, terminal_guid = {terminal.GUID})");
                 }
@@ -465,7 +465,7 @@ namespace PSF_MapGenerator
                 // Since tech plant garage locks are the only type where the lock does not face the same direction as the door we need to apply an offset for those, otherwise the door won't operate properly when checking inside/outside angles.
                 var yawOffset = doorLock.ObjectType == "lock_garage" ? 90 : 0;
 
-                logWriter.WriteLine($"LocalObject({doorLock.GUID}, IFFLock.Constructor(Vector3({doorLock.AbsX}f, {doorLock.AbsY}f, {doorLock.AbsZ}f), Vector3(0, 0, {doorLock.Yaw + yawOffset})), owning_building_guid = {_objList.Single(x => x.Id == doorLock.Owner).GUID}, door_guid = {closestDoor.GUID})");
+                logWriter.WriteLine($"LocalObject({doorLock.GUID}, IFFLock.Constructor(Vector3({doorLock.AbsX}f, {doorLock.AbsY}f, {doorLock.AbsZ}f), Vector3(0, 0, {doorLock.YawDegrees + yawOffset})), owning_building_guid = {_objList.Single(x => x.Id == doorLock.Owner).GUID}, door_guid = {closestDoor.GUID})");
 
                 _usedDoorIds.Add((int) closestDoor.GUID);
                 _usedLockIds.Add((int) doorLock.GUID);

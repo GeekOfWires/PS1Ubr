@@ -121,8 +121,8 @@ namespace PS1Ubr
                                 ScaleY = float.Parse(line[6]),
                                 ScaleZ = float.Parse(line[7]),
                                 Pitch = float.Parse(line[8]),
-                                Yaw = float.Parse(line[9]),
-                                Roll = float.Parse(line[10])
+                                Roll = float.Parse(line[9]),
+                                Yaw = float.Parse(line[10])
                             });
                         }
                     }
