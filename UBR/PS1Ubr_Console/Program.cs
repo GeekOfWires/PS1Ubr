@@ -1,13 +1,11 @@
-﻿using System;
+﻿using PS1Ubr;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 
-namespace PS1Ubr
+namespace PS1Ubr_Console;
+
+internal class Program
 {
-    class Program
-    {
-        static void Main()
+    static void Main(string[] args)
         {
             Console.WriteLine("Starting");
             var fs = new FileStream("C:\\psforever\\ubr\\expansion1.ubr", FileMode.Open); // Either change this to an absolute path, or make sure this file is in the bin folder before running.
@@ -24,4 +22,3 @@ namespace PS1Ubr
             Console.ReadKey();
         }
     }
-}
